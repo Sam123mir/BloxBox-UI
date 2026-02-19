@@ -13,11 +13,29 @@
 - **Arquitectura Modular**: Código transparente, seguro y fácil de auditar.
 - **Luau Strict**: Tipado estático para evitar errores y mejorar el IntelliSense.
 
-## 📸 Galería (Capturas de Pantalla)
+## 📸 Galería Visual (Showcase)
 
-| Main Dashboard | Interactive Components | Notifications |
+| **Dashboard Principal** | **Componentes Elite** | **Notificaciones SaaS** |
 | :---: | :---: | :---: |
-| ![Dashboard](https://via.placeholder.com/400x300?text=BloxBox+Dashboard) | ![Components](https://via.placeholder.com/400x300?text=BloxBox+Components) | ![Notifications](https://via.placeholder.com/400x300?text=BloxBox+Notifications) |
+| ![Preview](https://via.placeholder.com/400x250?text=BloxBox+Dashboard) | ![Components](https://via.placeholder.com/400x250?text=Premium+Widgets) | ![Notifications](https://via.placeholder.com/400x250?text=Smart+Notifications) |
+
+> [!TIP]
+> **BloxBox UI** utiliza un sistema de renderizado lento (Lazy Rendering) para asegurar que tu juego no pierda FPS al abrir el menú.
+
+---
+
+## 🚀 Instalación Instantánea (One-Line Loader)
+
+Para usar **BloxBox UI** sin tener que descargar archivos manualmente, copia y pega este código en tu script de Roblox (Executor):
+
+```lua
+local BloxBox = loadstring(game:HttpGet("https://raw.githubusercontent.com/Sam123mir/BloxBox-UI/master/Loader.lua"))()
+
+local UI = BloxBox.new()
+UI:ShowIntro()
+```
+
+---
 
 ## 🚀 Instalación Rápida
 
@@ -33,9 +51,13 @@
    UI:ShowIntro()
    ```
 
-## 📖 Documentación Completa
+## 📖 Documentación y API
 
-Para una guía detallada de todos los métodos y componentes, consulta nuestro [Manual Técnico](UIFramework/DOCUMENTATION.md).
+Nuestra documentación detallada se encuentra en el archivo [DOCUMENTATION.md](UIFramework/DOCUMENTATION.md). Allí encontrarás:
+- Cómo crear **Pestañas** y **Secciones**.
+- Uso del **Motor de Búsqueda** integrado.
+- Configuración de **Keybinds** y **Sliders**.
+- Guardado y carga de configuraciones JSON.
 
 ---
 
