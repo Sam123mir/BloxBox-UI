@@ -8,6 +8,7 @@ local Utils = script.Parent.Parent.Utils
 local Types = script.Parent.Parent.Types
 
 local WindowManager = require(Core.WindowManager)
+local AnimationEngine = require(Core.AnimationEngine)
 local DragSystem = require(Utils.DragSystem)
 local ComponentTypes = require(Types.ComponentTypes)
 
