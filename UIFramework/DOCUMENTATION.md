@@ -6,14 +6,14 @@ Bienvenido a la documentación oficial de **BloxBox UI**, el framework de interf
 
 ## 🚀 Guía de Inicio Rápido
 
-### Instalación
-1. Descarga la carpeta `UIFramework`.
-2. Colócala en tu entorno de desarrollo (Studio, VSCode con Rojo, etc.).
-3. Importa la librería:
-   ```lua
-   local BloxBox = require(path.to.UIFramework)
-   local UI = BloxBox.new()
-   ```
+### Acceso a la API
+No necesitas descargar ningún archivo. BloxBox UI se carga directamente desde nuestro servidor de GitHub para asegurar que siempre tengas la última versión estable.
+
+Copia este código en tu executor:
+```lua
+local BloxBox = loadstring(game:HttpGet("https://raw.githubusercontent.com/Sam123mir/BloxBox-UI/master/Loader.lua"))()
+local UI = BloxBox.new()
+```
 
 ### Tu primera ventana
 ```lua

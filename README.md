@@ -37,20 +37,6 @@ UI:ShowIntro()
 
 ---
 
-## 🚀 Instalación Rápida
-
-1. Clona el repositorio:
-   ```bash
-   git clone https://github.com/Sam123mir/BloxBox-UI.git
-   ```
-2. Mueve la carpeta `UIFramework` a tu proyecto de Roblox.
-3. Importa la clase principal:
-   ```lua
-   local BloxBox = require(path.to.UIFramework)
-   local UI = BloxBox.new()
-   UI:ShowIntro()
-   ```
-
 ## 📖 Documentación y API
 
 Nuestra documentación detallada se encuentra en el archivo [DOCUMENTATION.md](UIFramework/DOCUMENTATION.md). Allí encontrarás:
