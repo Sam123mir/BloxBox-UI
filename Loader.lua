@@ -28,6 +28,9 @@ local function LoadBloxBox()
 
     print("[BloxBox] Descargando componentes núcleo...")
 
+    local OldRoot = game:GetService("ReplicatedStorage"):FindFirstChild("BloxBoxUI")
+    if OldRoot then OldRoot:Destroy() end
+
     local Root = Instance.new("ModuleScript")
     Root.Name = "BloxBoxUI"
     Root.Source = HttpGet(BASE_URL .. "init.lua")
