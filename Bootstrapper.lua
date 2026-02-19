@@ -26,24 +26,14 @@ local function LoadBloxBox()
         return f
     end
 
-    print("[BloxBox] Descargando componentes núcleo...")
+    print("[BloxBox] Iniciando carga remota...")
 
-    local OldRoot = game:GetService("ReplicatedStorage"):FindFirstChild("BloxBoxUI")
-    if OldRoot then OldRoot:Destroy() end
-
-    local Root = Instance.new("ModuleScript")
-    Root.Name = "BloxBoxUI"
-    Root.Source = HttpGet(BASE_URL .. "init.lua")
-    Root.Parent = game:GetService("ReplicatedStorage")
+    local Root = CreateFolder("BloxBoxUI", game:GetService("ReplicatedStorage"))
     
-    local Folders = {
-        Core = CreateFolder("Core", Root),
-        Components = CreateFolder("Components", Root),
-        Utils = CreateFolder("Utils", Root),
-        Types = CreateFolder("Types", Root)
-    }
-
+    -- Estructura de archivos (Definida manualmente para evitar depender de API de GitHub en el cliente)
     local Files = {
+        ["init.lua"] = Root,
+        
         ["Core/AnimationEngine.lua"] = "Core",
         ["Core/ComponentRegistry.lua"] = "Core",
         ["Core/ConfigManager.lua"] = "Core",
@@ -73,20 +63,22 @@ local function LoadBloxBox()
         ["Types/ThemeTypes.lua"] = "Types"
     }
 
-    for path, folderKey in pairs(Files) do
+    local Folders = {
+        Core = CreateFolder("Core", Root),
+        Components = CreateFolder("Components", Root),
+        Utils = CreateFolder("Utils", Root),
+        Types = CreateFolder("Types", Root)
+    }
+
+    for path, parent in pairs(Files) do
         local source = HttpGet(BASE_URL .. path)
-        local name = path:match("([^/]+)%.lua$")
-        CreateModule(name, Folders[folderKey], source)
+        local name = path:match("([^/]+)%.lua$") or "init"
+        local p = typeof(parent) == "string" and Folders[parent] or Root
+        CreateModule(name, p, source)
     end
 
-    task.wait(0.2) -- Espera para asegurar sincronización en el executor
-    
-    if Root:IsA("ModuleScript") then
-        print("[BloxBox] Carga completada con éxito v1.00.0")
-        return require(Root)
-    else
-        error("[BloxBox Error] El objeto raíz no es un ModuleScript: " .. Root.ClassName)
-    end
+    print("[BloxBox] Carga completada con éxito v1.00.0")
+    return require(Root)
 end
 
 return LoadBloxBox()

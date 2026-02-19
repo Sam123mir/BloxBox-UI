@@ -1,8 +1,8 @@
-# 💎 BloxBox UI - 1.00.0 (Elite Roblox UI Framework)
+# 💎 BloxBox UI - v1.02.0 (Elite Luau Edition)
 
-![BloxBox Banner](https://via.placeholder.com/1000x300?text=BloxBox+UI+Elite+Framework)
+![BloxBox Banner](images/banner-BloxBox.png)
 
-**BloxBox UI** es una librería premium de interfaz de usuario para Roblox, diseñada para desarrolladores que buscan un estándar profesional, modular y estéticamente superior. Inspirada en las mejores UIs del ecosistema como *Rayfield*, *Luna* y *Starlight*.
+**BloxBox UI** es una librería premium de interfaz de usuario para Roblox, optimizada para **Luau** y diseñada para desarrolladores que buscan un estándar profesional, modular y estéticamente superior.
 
 ## 🌟 Características Destacadas
 
@@ -15,9 +15,8 @@
 
 ## 📸 Galería Visual (Showcase)
 
-| **Dashboard Principal** | **Componentes Elite** | **Notificaciones SaaS** |
-| :---: | :---: | :---: |
-| ![Preview](https://via.placeholder.com/400x250?text=BloxBox+Dashboard) | ![Components](https://via.placeholder.com/400x250?text=Premium+Widgets) | ![Notifications](https://via.placeholder.com/400x250?text=Smart+Notifications) |
+| **Dashboard Principal** - **Componentes Elite** - **Notificaciones SaaS** |
+| ![Preview](images/galery-BloxBox.png) |
 
 > [!TIP]
 > **BloxBox UI** utiliza un sistema de renderizado lento (Lazy Rendering) para asegurar que tu juego no pierda FPS al abrir el menú.
