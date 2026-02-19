@@ -28,12 +28,22 @@ local function LoadBloxBox()
 
     print("[BloxBox] Iniciando carga remota...")
 
-    local Root = CreateFolder("BloxBoxUI", game:GetService("ReplicatedStorage"))
+    -- 1. Descargar init.lua primero para que sea el Root
+    local initSource = HttpGet(BASE_URL .. "init.lua")
+    local Root = Instance.new("ModuleScript")
+    Root.Name = "BloxBoxUI"
+    Root.Source = initSource
+    Root.Parent = game:GetService("ReplicatedStorage")
     
-    -- Estructura de archivos (Definida manualmente para evitar depender de API de GitHub en el cliente)
+    -- Estructura de carpetas dentro del ModuleScript Root
+    local Folders = {
+        Core = CreateFolder("Core", Root),
+        Components = CreateFolder("Components", Root),
+        Utils = CreateFolder("Utils", Root),
+        Types = CreateFolder("Types", Root)
+    }
+
     local Files = {
-        ["init.lua"] = Root,
-        
         ["Core/AnimationEngine.lua"] = "Core",
         ["Core/ComponentRegistry.lua"] = "Core",
         ["Core/ConfigManager.lua"] = "Core",
@@ -63,18 +73,10 @@ local function LoadBloxBox()
         ["Types/ThemeTypes.lua"] = "Types"
     }
 
-    local Folders = {
-        Core = CreateFolder("Core", Root),
-        Components = CreateFolder("Components", Root),
-        Utils = CreateFolder("Utils", Root),
-        Types = CreateFolder("Types", Root)
-    }
-
-    for path, parent in pairs(Files) do
+    for path, folderKey in pairs(Files) do
         local source = HttpGet(BASE_URL .. path)
-        local name = path:match("([^/]+)%.lua$") or "init"
-        local p = typeof(parent) == "string" and Folders[parent] or Root
-        CreateModule(name, p, source)
+        local name = path:match("([^/]+)%.lua$")
+        CreateModule(name, Folders[folderKey], source)
     end
 
     print("[BloxBox] Carga completada con éxito v1.00.0")
