@@ -26,16 +26,13 @@ local function LoadBloxBox()
         return f
     end
 
-    print("[BloxBox] Iniciando carga remota...")
+    print("[BloxBox] Descargando componentes núcleo...")
 
-    -- 1. Descargar init.lua primero para que sea el Root
-    local initSource = HttpGet(BASE_URL .. "init.lua")
     local Root = Instance.new("ModuleScript")
     Root.Name = "BloxBoxUI"
-    Root.Source = initSource
+    Root.Source = HttpGet(BASE_URL .. "init.lua")
     Root.Parent = game:GetService("ReplicatedStorage")
     
-    -- Estructura de carpetas dentro del ModuleScript Root
     local Folders = {
         Core = CreateFolder("Core", Root),
         Components = CreateFolder("Components", Root),
@@ -79,8 +76,14 @@ local function LoadBloxBox()
         CreateModule(name, Folders[folderKey], source)
     end
 
-    print("[BloxBox] Carga completada con éxito v1.00.0")
-    return require(Root)
+    task.wait(0.2) -- Espera para asegurar sincronización en el executor
+    
+    if Root:IsA("ModuleScript") then
+        print("[BloxBox] Carga completada con éxito v1.00.0")
+        return require(Root)
+    else
+        error("[BloxBox Error] El objeto raíz no es un ModuleScript: " .. Root.ClassName)
+    end
 end
 
 return LoadBloxBox()
