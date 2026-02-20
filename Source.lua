@@ -313,27 +313,35 @@ end
 local function MakeResize(main,minW,minH)
 	minW=minW or 500; minH=minH or 350
 	local rz=Instance.new("TextButton")
-	rz.Size=UDim2.fromOffset(18,18)
-	rz.Position=UDim2.new(1,-16,1,-16)
-	rz.BackgroundTransparency=1
+	rz.Size=UDim2.fromOffset(22,22)
+	rz.Position=UDim2.new(1,-24,1,-24)
+	rz.BackgroundColor3=T.BgAlt
+	rz.BackgroundTransparency=0.4
 	rz.Text=""
 	rz.AutoButtonColor=false
 	rz.ZIndex=main.ZIndex+5
 	rz.Parent=main
+	Corner(rz,6)
+	Stroke(rz,T.Border,1,0.5)
 
-	-- Visual grip dots
-	for r=0,1 do for c=0,1 do
-		if r+c>0 then
-			local dot=Instance.new("Frame")
-			dot.Size=UDim2.fromOffset(3,3)
-			dot.Position=UDim2.fromOffset(4+c*6,4+r*6)
-			dot.BackgroundColor3=T.TextMut
-			dot.BackgroundTransparency=0.4
-			dot.BorderSizePixel=0
-			dot.Parent=rz
-			Corner(dot,2)
-		end
-	end end
+	-- Resize icon inside
+	local rzIc=Instance.new("ImageLabel")
+	rzIc.Size=UDim2.fromOffset(14,14)
+	rzIc.Position=UDim2.fromOffset(4,4)
+	rzIc.BackgroundTransparency=1
+	rzIc.ImageColor3=T.TextMut
+	rzIc.Image=Icon("aspect_ratio")
+	rzIc.Parent=rz
+
+	-- Hover feedback
+	rz.MouseEnter:Connect(function()
+		Tw(rz,{BackgroundTransparency=0.1},TI.Fast)
+		Tw(rzIc,{ImageColor3=T.Accent},TI.Fast)
+	end)
+	rz.MouseLeave:Connect(function()
+		Tw(rz,{BackgroundTransparency=0.4},TI.Fast)
+		Tw(rzIc,{ImageColor3=T.TextMut},TI.Fast)
+	end)
 
 	local dragging,startPos,startSz=false,nil,nil
 	rz.InputBegan:Connect(function(i)
@@ -1537,7 +1545,7 @@ end
 -- ╔══════════════════════════════════════╗
 -- ║           TAB v3.0                   ║
 -- ╚══════════════════════════════════════╝
-local TabIcons={"home","settings","info","build","star","explore","extension","dashboard","person","code"}
+local TabIcons={"cottage","tune","info","build","star","explore","extension","dashboard","person","code"}
 local Tab={};Tab.__index=Tab
 function Tab.new(w,name,idx)
 	local self=setmetatable({_w=w,_lib=w._lib,_name=name,_idx=idx or 1},Tab)
@@ -1870,22 +1878,24 @@ function Win:_build()
 
 	Divider(mbar,UDim2.fromOffset(195,12))
 
-	-- Grip dots pattern (3x2 dots) instead of big drag icon
-	local gripFrame=Instance.new("Frame")
-	gripFrame.Size=UDim2.fromOffset(24,24)
-	gripFrame.Position=UDim2.fromOffset(210,16)
-	gripFrame.BackgroundTransparency=1
-	gripFrame.Parent=mbar
-	for row=0,2 do for col=0,1 do
-		local d=Instance.new("Frame")
-		d.Size=UDim2.fromOffset(3,3)
-		d.Position=UDim2.fromOffset(col*8, row*8)
-		d.BackgroundColor3=T.TextMut
-		d.BackgroundTransparency=0.3
-		d.BorderSizePixel=0
-		d.Parent=gripFrame
-		Corner(d,2)
-	end end
+	-- Move icon (styled box)
+	local mDragBg=Instance.new("Frame")
+	mDragBg.Size=UDim2.fromOffset(34,34)
+	mDragBg.Position=UDim2.fromOffset(206,10)
+	mDragBg.BackgroundColor3=T.BgAlt
+	mDragBg.BackgroundTransparency=0.3
+	mDragBg.BorderSizePixel=0
+	mDragBg.Parent=mbar
+	Corner(mDragBg,8)
+	Stroke(mDragBg,T.Border,1,0.5)
+
+	local mDragIc=Instance.new("ImageLabel")
+	mDragIc.Size=UDim2.fromOffset(18,18)
+	mDragIc.Position=UDim2.fromOffset(8,8)
+	mDragIc.BackgroundTransparency=1
+	mDragIc.ImageColor3=T.TextDim
+	mDragIc.Image=Icon("open_with")
+	mDragIc.Parent=mDragBg
 
 	-- Close button on minibar
 	local mClose=Instance.new("TextButton")
