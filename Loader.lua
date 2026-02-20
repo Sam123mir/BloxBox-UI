@@ -79,7 +79,7 @@ local function LoadBloxBox()
         CreateModule(name, Folders[folderKey], source)
     end
 
-    task.wait(0.3)
+    task.wait(0.1)
     
     local success, result = pcall(function()
         return require(Root)
