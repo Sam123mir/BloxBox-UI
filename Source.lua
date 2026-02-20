@@ -445,9 +445,10 @@ local function Notif(o)
 	xBtn.Parent=card
 	Corner(xBtn,9)
 
-	-- Entrance animation (slide from right)
+	-- Entrance animation (slide from right, smooth and slow)
 	card.Position=UDim2.fromOffset(320,0)
-	Tw(card,{Position=UDim2.fromOffset(0,0)},TI.Bounce)
+	card.BackgroundTransparency=0.5
+	Tw(card,{Position=UDim2.fromOffset(0,0),BackgroundTransparency=0.04},TweenInfo.new(0.65,Enum.EasingStyle.Quint,Enum.EasingDirection.Out))
 
 	local dur=o.Duration or 4
 	local dismissed=false
@@ -696,15 +697,15 @@ end
 -- BUTTON (redesigned with ripple + gradient + icon ring)
 local function CButton(tab,o)
 	local b=Instance.new("TextButton")
-	b.Size=UDim2.new(1,0,0,36)
+	b.Size=UDim2.new(1,0,0,40)
 	b.BackgroundColor3=T.Surface
 	b.BorderSizePixel=0
 	b.Text=""
 	b.AutoButtonColor=false
 	b.Parent=tab._ct
 	b.ClipsDescendants=true
-	Corner(b,8)
-	Stroke(b,T.Border,1,0.7)
+	Corner(b,10)
+	Stroke(b,T.Border,1,0.65)
 
 	-- Inner gradient tint
 	local inner=Instance.new("Frame")
@@ -782,20 +783,20 @@ local function CButton(tab,o)
 	end)
 end
 
--- TOGGLE (redesigned with pill + glow indicator)
+-- TOGGLE (v3.1 - smooth iOS-style)
 local function CToggle(tab,o)
 	local st=tab._lib._state
 
 	local c=Instance.new("TextButton")
-	c.Size=UDim2.new(1,0,0,36)
+	c.Size=UDim2.new(1,0,0,40)
 	c.BackgroundColor3=T.Surface
 	c.BorderSizePixel=0
 	c.Text=""
 	c.AutoButtonColor=false
 	c.ClipsDescendants=true
 	c.Parent=tab._ct
-	Corner(c,8)
-	Stroke(c,T.Border,1,0.72)
+	Corner(c,10)
+	local cStroke=Stroke(c,T.Border,1,0.65)
 
 	local inner=Instance.new("Frame")
 	inner.Size=UDim2.fromScale(1,1)
@@ -806,8 +807,8 @@ local function CToggle(tab,o)
 	Grad(inner,Color3.fromRGB(34,34,48),Color3.fromRGB(22,22,30),180)
 
 	local lb=Instance.new("TextLabel")
-	lb.Size=UDim2.new(1,-70,1,0)
-	lb.Position=UDim2.fromOffset(12,0)
+	lb.Size=UDim2.new(1,-100,1,0)
+	lb.Position=UDim2.fromOffset(14,0)
 	lb.BackgroundTransparency=1
 	lb.Text=o.Name
 	lb.TextColor3=T.Text
@@ -816,70 +817,65 @@ local function CToggle(tab,o)
 	lb.TextXAlignment=Enum.TextXAlignment.Left
 	lb.Parent=c
 
-	-- Toggle track (wider, rounder)
+	-- Toggle track (pill shape)
 	local tk=Instance.new("Frame")
-	tk.Size=UDim2.fromOffset(38,20)
-	tk.Position=UDim2.new(1,-48,0.5,0)
+	tk.Size=UDim2.fromOffset(44,24)
+	tk.Position=UDim2.new(1,-54,0.5,0)
 	tk.AnchorPoint=Vector2.new(0,0.5)
-	tk.BackgroundColor3=Color3.fromRGB(45,45,60)
+	tk.BackgroundColor3=Color3.fromRGB(40,40,55)
 	tk.BorderSizePixel=0
 	tk.Parent=c
-	Corner(tk,10)
-	Stroke(tk,T.Border,1,0.5)
+	Corner(tk,12)
+	Stroke(tk,T.Border,1.2,0.4)
 
-	-- Track inner shine
-	local tkShine=Instance.new("Frame")
-	tkShine.Size=UDim2.new(1,0,0,8)
-	tkShine.BackgroundColor3=Color3.new(1,1,1)
-	tkShine.BackgroundTransparency=0.9
-	tkShine.BorderSizePixel=0
-	tkShine.Parent=tk
-	Corner(tkShine,10)
-
-	-- Knob
+	-- Knob (circle, shadow effect)
 	local kn=Instance.new("Frame")
-	kn.Size=UDim2.fromOffset(14,14)
+	kn.Size=UDim2.fromOffset(18,18)
 	kn.Position=UDim2.fromOffset(3,3)
-	kn.BackgroundColor3=T.TextMut
+	kn.BackgroundColor3=Color3.fromRGB(100,100,120)
 	kn.BorderSizePixel=0
 	kn.Parent=tk
-	Corner(kn,7)
+	Corner(kn,9)
+	Stroke(kn,Color3.fromRGB(30,30,45),1.5,0.3)
 
-	-- Knob inner glow dot
-	local knDot=Instance.new("Frame")
-	knDot.Size=UDim2.fromOffset(6,6)
-	knDot.Position=UDim2.fromOffset(4,4)
-	knDot.BackgroundColor3=Color3.new(1,1,1)
-	knDot.BackgroundTransparency=1
-	knDot.BorderSizePixel=0
-	knDot.Parent=kn
-	Corner(knDot,3)
+	-- Glow behind knob when ON
+	local knGlow=Instance.new("ImageLabel")
+	knGlow.Size=UDim2.fromOffset(30,30)
+	knGlow.Position=UDim2.fromOffset(-6,-6)
+	knGlow.BackgroundTransparency=1
+	knGlow.Image="rbxassetid://5028857084"
+	knGlow.ImageColor3=T.Accent
+	knGlow.ImageTransparency=1
+	knGlow.ZIndex=kn.ZIndex-1
+	knGlow.Parent=kn
 
-	-- State label (ON/OFF)
+	-- State label
 	local stLbl=Instance.new("TextLabel")
-	stLbl.Size=UDim2.fromOffset(26,14)
-	stLbl.Position=UDim2.new(1,-76,0.5,0)
+	stLbl.Size=UDim2.fromOffset(28,16)
+	stLbl.Position=UDim2.new(1,-86,0.5,0)
 	stLbl.AnchorPoint=Vector2.new(0,0.5)
 	stLbl.BackgroundTransparency=1
 	stLbl.Text="OFF"
 	stLbl.TextColor3=T.TextMut
 	stLbl.Font=T.FontB
-	stLbl.TextSize=9
+	stLbl.TextSize=10
 	stLbl.TextXAlignment=Enum.TextXAlignment.Right
 	stLbl.Parent=c
 
 	local function upd(v)
 		if v then
-			Tw(kn,{Position=UDim2.fromOffset(21,3),BackgroundColor3=Color3.new(1,1,1)},TI.Fast)
-			Tw(tk,{BackgroundColor3=T.Accent},TI.Fast)
-			Tw(knDot,{BackgroundTransparency=0.6},TI.Fast)
+			Tw(kn,{Position=UDim2.fromOffset(23,3),BackgroundColor3=Color3.new(1,1,1),Size=UDim2.fromOffset(18,18)},TI.Bounce)
+			Tw(tk,{BackgroundColor3=T.Accent},TI.Normal)
+			Tw(knGlow,{ImageTransparency=0.5},TI.Normal)
 			Tw(stLbl,{TextColor3=T.Accent},TI.Fast)
+			Tw(cStroke,{Color=T.Accent,Transparency=0.5},TI.Normal)
 			stLbl.Text="ON"
 		else
-			Tw(kn,{Position=UDim2.fromOffset(3,3),BackgroundColor3=T.TextMut},TI.Fast)
-			Tw(tk,{BackgroundColor3=Color3.fromRGB(45,45,60)},TI.Fast)
-			Tw(knDot,{BackgroundTransparency=1},TI.Fast)
+			Tw(kn,{Position=UDim2.fromOffset(3,3),BackgroundColor3=Color3.fromRGB(100,100,120),Size=UDim2.fromOffset(18,18)},TI.Bounce)
+			Tw(tk,{BackgroundColor3=Color3.fromRGB(40,40,55)},TI.Normal)
+			Tw(knGlow,{ImageTransparency=1},TI.Normal)
 			Tw(stLbl,{TextColor3=T.TextMut},TI.Fast)
+			Tw(cStroke,{Color=T.Border,Transparency=0.65},TI.Normal)
 			stLbl.Text="OFF"
 		end
 	end
@@ -968,15 +964,15 @@ local function CSlider(tab,o)
 	vl.TextSize=12
 	vl.Parent=vBg
 
-	-- Track background
+	-- Track background (taller for easier clicking)
 	local tbg=Instance.new("Frame")
-	tbg.Size=UDim2.new(1,-24,0,5)
-	tbg.Position=UDim2.fromOffset(12,26)
+	tbg.Size=UDim2.new(1,-24,0,8)
+	tbg.Position=UDim2.fromOffset(12,28)
 	tbg.BackgroundColor3=T.BgAlt
 	tbg.BorderSizePixel=0
 	tbg.Parent=c
-	Corner(tbg,3)
-	Stroke(tbg,T.Border,1,0.6)
+	Corner(tbg,4)
+	Stroke(tbg,T.Border,1,0.5)
 
 	-- Filled portion
 	local fl=Instance.new("Frame")
@@ -984,24 +980,24 @@ local function CSlider(tab,o)
 	fl.BackgroundColor3=T.Accent
 	fl.BorderSizePixel=0
 	fl.Parent=tbg
-	Corner(fl,3)
+	Corner(fl,4)
 	Grad(fl,T.AccSoft,T.AccDark,180)
 
-	-- Knob
+	-- Knob (bigger for easy drag)
 	local kc=Instance.new("Frame")
-	kc.Size=UDim2.fromOffset(14,14)
-	kc.Position=UDim2.new(1,-7,0.5,0)
+	kc.Size=UDim2.fromOffset(18,18)
+	kc.Position=UDim2.new(1,-9,0.5,0)
 	kc.AnchorPoint=Vector2.new(0.5,0.5)
 	kc.BackgroundColor3=T.Text
 	kc.BorderSizePixel=0
 	kc.Parent=fl
-	Corner(kc,7)
-	Stroke(kc,T.Accent,1.5,0.3)
+	Corner(kc,9)
+	Stroke(kc,T.Accent,2,0.2)
 
 	-- Knob inner dot
 	local kdot=Instance.new("Frame")
-	kdot.Size=UDim2.fromOffset(5,5)
-	kdot.Position=UDim2.fromOffset(4,4)
+	kdot.Size=UDim2.fromOffset(6,6)
+	kdot.Position=UDim2.fromOffset(6,6)
 	kdot.BackgroundColor3=T.Accent
 	kdot.BackgroundTransparency=0.1
 	kdot.BorderSizePixel=0
@@ -1024,7 +1020,7 @@ local function CSlider(tab,o)
 		if i.UserInputType==Enum.UserInputType.MouseButton1 or
 		   i.UserInputType==Enum.UserInputType.Touch then
 			dg=true
-			Tw(kc,{Size=UDim2.fromOffset(18,18)},TI.Fast)
+			Tw(kc,{Size=UDim2.fromOffset(22,22)},TI.Fast)
 			upd((i.Position.X-tbg.AbsolutePosition.X)/tbg.AbsoluteSize.X)
 		end
 	end)
@@ -1039,7 +1035,7 @@ local function CSlider(tab,o)
 		   i.UserInputType==Enum.UserInputType.Touch then
 			if dg then
 				dg=false
-				Tw(kc,{Size=UDim2.fromOffset(14,14)},TI.Bounce)
+				Tw(kc,{Size=UDim2.fromOffset(18,18)},TI.Bounce)
 			end
 		end
 	end)
@@ -1056,13 +1052,13 @@ local function CDropdown(tab,o)
 	local op=false
 
 	local c=Instance.new("Frame")
-	c.Size=UDim2.new(1,0,0,36)
+	c.Size=UDim2.new(1,0,0,40)
 	c.BackgroundColor3=T.Surface
 	c.BorderSizePixel=0
 	c.ClipsDescendants=true
 	c.Parent=tab._ct
-	Corner(c,8)
-	Stroke(c,T.Border,1,0.72)
+	Corner(c,10)
+	local cStroke=Stroke(c,T.Border,1,0.65)
 
 	local inner=Instance.new("Frame")
 	inner.Size=UDim2.fromScale(1,1)
@@ -1073,7 +1069,7 @@ local function CDropdown(tab,o)
 	Grad(inner,Color3.fromRGB(34,34,48),Color3.fromRGB(22,22,30),180)
 
 	local hd=Instance.new("TextButton")
-	hd.Size=UDim2.new(1,0,0,36)
+	hd.Size=UDim2.new(1,0,0,40)
 	hd.BackgroundTransparency=1
 	hd.Text=""
 	hd.Parent=c
@@ -1159,27 +1155,28 @@ local function CDropdown(tab,o)
 
 	for _,item in ipairs(o.List or{})do
 		local b=Instance.new("TextButton")
-		b.Size=UDim2.new(1,0,0,28)
+		b.Size=UDim2.new(1,0,0,32)
 		b.BackgroundColor3=T.BgAlt
 		b.BackgroundTransparency=0.5
 		b.BorderSizePixel=0
 		b.Text=""
 		b.AutoButtonColor=false
 		b.Parent=lf
-		Corner(b,6)
+		Corner(b,8)
 
-		local bDot=Instance.new("Frame")
-		bDot.Size=UDim2.fromOffset(5,5)
-		bDot.Position=UDim2.fromOffset(8,11)
-		bDot.BackgroundColor3=T.TextMut
-		bDot.BackgroundTransparency=0.5
-		bDot.BorderSizePixel=0
-		bDot.Parent=b
-		Corner(bDot,3)
+		-- Check icon per item
+		local bIc=Instance.new("ImageLabel")
+		bIc.Size=UDim2.fromOffset(14,14)
+		bIc.Position=UDim2.fromOffset(8,9)
+		bIc.BackgroundTransparency=1
+		bIc.ImageColor3=T.TextMut
+		bIc.ImageTransparency=0.4
+		bIc.Image=Icon("radio_button_unchecked")
+		bIc.Parent=b
 
 		local bLb=Instance.new("TextLabel")
-		bLb.Size=UDim2.new(1,-22,1,0)
-		bLb.Position=UDim2.fromOffset(20,0)
+		bLb.Size=UDim2.new(1,-32,1,0)
+		bLb.Position=UDim2.fromOffset(28,0)
 		bLb.BackgroundTransparency=1
 		bLb.Text=item
 		bLb.TextColor3=T.TextDim
@@ -1191,12 +1188,12 @@ local function CDropdown(tab,o)
 		b.MouseEnter:Connect(function()
 			Tw(b,{BackgroundTransparency=0.1},TI.Fast)
 			Tw(bLb,{TextColor3=T.Text},TI.Fast)
-			Tw(bDot,{BackgroundColor3=T.Accent,BackgroundTransparency=0},TI.Fast)
+			Tw(bIc,{ImageColor3=T.Accent,ImageTransparency=0},TI.Fast)
 		end)
 		b.MouseLeave:Connect(function()
 			Tw(b,{BackgroundTransparency=0.5},TI.Fast)
 			Tw(bLb,{TextColor3=T.TextDim},TI.Fast)
-			Tw(bDot,{BackgroundColor3=T.TextMut,BackgroundTransparency=0.5},TI.Fast)
+			Tw(bIc,{ImageColor3=T.TextMut,ImageTransparency=0.4},TI.Fast)
 		end)
 		b.MouseButton1Click:Connect(function()
 			sl.Text=item
@@ -1770,11 +1767,11 @@ end
 function Win:_build()
 	local gui=MakeGUI("BBW",50)
 	self._gui=gui
-	local sz=self._o.Size or UDim2.fromOffset(590,410)
+	local sz=self._o.Size or UDim2.fromOffset(650,460)
 
 	-- ── MINI BAR (minimize state) ─────────────────────────────────────
 	local mbar=Instance.new("Frame")
-	mbar.Size=UDim2.fromOffset(248,40)
+	mbar.Size=UDim2.fromOffset(320,55)
 	mbar.Position=UDim2.new(0.5,0,0,8)
 	mbar.AnchorPoint=Vector2.new(0.5,0)
 	mbar.BackgroundColor3=T.Glass
@@ -1782,82 +1779,109 @@ function Win:_build()
 	mbar.BorderSizePixel=0
 	mbar.Visible=false
 	mbar.Parent=gui
-	Corner(mbar,12)
-	Stroke(mbar,T.BorderAc,1.2,0.35)
-	Grad(mbar,Color3.fromRGB(28,28,42),Color3.fromRGB(20,20,30))
+	Corner(mbar,14)
+	Stroke(mbar,T.BorderAc,1.4,0.3)
+	Grad(mbar,Color3.fromRGB(26,26,40),Color3.fromRGB(18,18,28))
 	self._mbar=mbar
+	MakeDrag(mbar,mbar) -- Entire bar is draggable
 
+	-- Logo in minibar
 	local mLogoBg=Instance.new("Frame")
-	mLogoBg.Size=UDim2.fromOffset(28,28)
-	mLogoBg.Position=UDim2.fromOffset(6,6)
+	mLogoBg.Size=UDim2.fromOffset(38,38)
+	mLogoBg.Position=UDim2.fromOffset(8,8)
 	mLogoBg.BackgroundColor3=T.Accent
 	mLogoBg.BackgroundTransparency=0.78
 	mLogoBg.BorderSizePixel=0
 	mLogoBg.Parent=mbar
-	Corner(mLogoBg,8)
+	Corner(mLogoBg,10)
 
 	local mLogo=Instance.new("ImageLabel")
-	mLogo.Size=UDim2.fromOffset(18,18)
-	mLogo.Position=UDim2.fromOffset(5,5)
+	mLogo.Size=UDim2.fromOffset(26,26)
+	mLogo.Position=UDim2.fromOffset(6,6)
 	mLogo.BackgroundTransparency=1
-	mLogo.Image=self._o.Logo or ""
+	mLogo.Image="rbxassetid://130827302215106"
 	mLogo.Parent=mLogoBg
 
 	local mBtn=Instance.new("TextButton")
-	mBtn.Size=UDim2.fromOffset(110,40)
-	mBtn.Position=UDim2.fromOffset(38,0)
+	mBtn.Size=UDim2.fromOffset(140,55)
+	mBtn.Position=UDim2.fromOffset(50,0)
 	mBtn.BackgroundTransparency=1
 	mBtn.Text=self._o.Title or "BloxBox UI"
 	mBtn.TextColor3=T.Text
 	mBtn.Font=T.FontB
-	mBtn.TextSize=12
+	mBtn.TextSize=14
 	mBtn.TextXAlignment=Enum.TextXAlignment.Left
 	mBtn.AutoButtonColor=false
 	mBtn.Parent=mbar
 	mBtn.MouseEnter:Connect(function()Tw(mBtn,{TextColor3=T.Accent},TI.Fast)end)
 	mBtn.MouseLeave:Connect(function()Tw(mBtn,{TextColor3=T.Text},TI.Fast)end)
 
-	Divider(mbar,UDim2.fromOffset(154,10))
+	Divider(mbar,UDim2.fromOffset(195,12))
 
+	-- Drag icon (bigger, visual)
 	local mDragBg=Instance.new("Frame")
-	mDragBg.Size=UDim2.fromOffset(30,28)
-	mDragBg.Position=UDim2.fromOffset(162,6)
+	mDragBg.Size=UDim2.fromOffset(36,36)
+	mDragBg.Position=UDim2.fromOffset(206,10)
 	mDragBg.BackgroundColor3=T.BgAlt
-	mDragBg.BackgroundTransparency=0.35
+	mDragBg.BackgroundTransparency=0.3
 	mDragBg.BorderSizePixel=0
 	mDragBg.Parent=mbar
-	Corner(mDragBg,7)
-	Stroke(mDragBg,T.Border,1,0.6)
+	Corner(mDragBg,8)
+	Stroke(mDragBg,T.Border,1,0.5)
 
 	local mDragIc=Instance.new("ImageLabel")
-	mDragIc.Size=UDim2.fromOffset(18,18)
-	mDragIc.Position=UDim2.fromOffset(6,5)
+	mDragIc.Size=UDim2.fromOffset(20,20)
+	mDragIc.Position=UDim2.fromOffset(8,8)
 	mDragIc.BackgroundTransparency=1
 	mDragIc.ImageColor3=T.TextDim
 	mDragIc.Image=Icon("open_with")
 	mDragIc.Parent=mDragBg
-	MakeDrag(mDragBg,mbar)
 
-	-- Restore close for mini bar
+	-- Minimize button on minibar
+	local mMin=Instance.new("TextButton")
+	mMin.Size=UDim2.fromOffset(30,30)
+	mMin.Position=UDim2.fromOffset(250,12)
+	mMin.BackgroundColor3=T.Warn
+	mMin.BackgroundTransparency=0.75
+	mMin.Text=""
+	mMin.BorderSizePixel=0
+	mMin.AutoButtonColor=false
+	mMin.Parent=mbar
+	Corner(mMin,15)
+	local mMinIc=Instance.new("ImageLabel")
+	mMinIc.Size=UDim2.fromOffset(16,16)
+	mMinIc.Position=UDim2.fromOffset(7,7)
+	mMinIc.BackgroundTransparency=1
+	mMinIc.ImageColor3=T.Warn
+	mMinIc.Image=Icon("remove")
+	mMinIc.Parent=mMin
+	mMin.MouseEnter:Connect(function()Tw(mMin,{BackgroundTransparency=0.2},TI.Fast)end)
+	mMin.MouseLeave:Connect(function()Tw(mMin,{BackgroundTransparency=0.75},TI.Fast)end)
+
+	-- Close button on minibar
 	local mClose=Instance.new("TextButton")
-	mClose.Size=UDim2.fromOffset(24,24)
-	mClose.Position=UDim2.new(1,-30,0.5,0)
-	mClose.AnchorPoint=Vector2.new(0,0.5)
+	mClose.Size=UDim2.fromOffset(30,30)
+	mClose.Position=UDim2.fromOffset(284,12)
 	mClose.BackgroundColor3=T.Err
-	mClose.BackgroundTransparency=0.78
-	mClose.Text="×"
-	mClose.TextColor3=T.TextMut
-	mClose.Font=T.FontB
-	mClose.TextSize=14
+	mClose.BackgroundTransparency=0.75
+	mClose.Text=""
 	mClose.BorderSizePixel=0
 	mClose.AutoButtonColor=false
 	mClose.Parent=mbar
-	Corner(mClose,12)
-	mClose.MouseEnter:Connect(function()Tw(mClose,{BackgroundTransparency=0.15,TextColor3=T.Text},TI.Fast)end)
-	mClose.MouseLeave:Connect(function()Tw(mClose,{BackgroundTransparency=0.78,TextColor3=T.TextMut},TI.Fast)end)
+	Corner(mClose,15)
+	local mCloseIc=Instance.new("ImageLabel")
+	mCloseIc.Size=UDim2.fromOffset(16,16)
+	mCloseIc.Position=UDim2.fromOffset(7,7)
+	mCloseIc.BackgroundTransparency=1
+	mCloseIc.ImageColor3=T.Err
+	mCloseIc.Image=Icon("close")
+	mCloseIc.Parent=mClose
+	mClose.MouseEnter:Connect(function()Tw(mClose,{BackgroundTransparency=0.15},TI.Fast);Tw(mCloseIc,{ImageColor3=T.Text},TI.Fast)end)
+	mClose.MouseLeave:Connect(function()Tw(mClose,{BackgroundTransparency=0.75},TI.Fast);Tw(mCloseIc,{ImageColor3=T.Err},TI.Fast)end)
 	mClose.MouseButton1Click:Connect(function()self:Destroy()end)
 
 	mBtn.MouseButton1Click:Connect(function()self:Restore()end)
+	mMin.MouseButton1Click:Connect(function()self:Restore()end)
 	mLogoBg.InputBegan:Connect(function(i)
 		if i.UserInputType==Enum.UserInputType.MouseButton1 then self:Restore()end
 	end)
@@ -1883,7 +1907,7 @@ function Win:_build()
 
 	-- ── HEADER ───────────────────────────────────────────────────────
 	local hd=Instance.new("Frame")
-	hd.Size=UDim2.new(1,0,0,40)
+	hd.Size=UDim2.new(1,0,0,44)
 	hd.BackgroundColor3=T.BgAlt
 	hd.BorderSizePixel=0
 	hd.Parent=main
@@ -1908,28 +1932,17 @@ function Win:_build()
 	hdLine.BorderSizePixel=0
 	hdLine.Parent=hd
 
-	-- Logo dot (accent indicator)
-	local dot=Instance.new("Frame")
-	dot.Size=UDim2.fromOffset(7,7)
-	dot.Position=UDim2.fromOffset(14,17)
-	dot.BackgroundColor3=T.Accent
-	dot.BorderSizePixel=0
-	dot.Parent=hd
-	Corner(dot,4)
-
-	-- Pulse animation on dot
-	task.spawn(function()
-		while dot and dot.Parent do
-			Tw(dot,{BackgroundTransparency=0.6},TI.Slow)
-			task.wait(0.7)
-			Tw(dot,{BackgroundTransparency=0},TI.Slow)
-			task.wait(0.7)
-		end
-	end)
+	-- Logo image (replaces pulsing dot)
+	local hdLogo=Instance.new("ImageLabel")
+	hdLogo.Size=UDim2.fromOffset(22,22)
+	hdLogo.Position=UDim2.fromOffset(12,11)
+	hdLogo.BackgroundTransparency=1
+	hdLogo.Image="rbxassetid://130827302215106"
+	hdLogo.Parent=hd
 
 	local ttl=Instance.new("TextLabel")
 	ttl.Size=UDim2.new(1,-120,1,0)
-	ttl.Position=UDim2.fromOffset(26,0)
+	ttl.Position=UDim2.fromOffset(38,0)
 	ttl.BackgroundTransparency=1
 	ttl.Text=self._o.Title or "BloxBox"
 	ttl.TextColor3=T.Text
@@ -1997,8 +2010,8 @@ function Win:_build()
 
 	-- ── SIDEBAR ──────────────────────────────────────────────────────
 	local sb=Instance.new("Frame")
-	sb.Size=UDim2.new(0,136,1,-40)
-	sb.Position=UDim2.fromOffset(0,40)
+	sb.Size=UDim2.new(0,136,1,-44)
+	sb.Position=UDim2.fromOffset(0,44)
 	sb.BackgroundColor3=T.BgAlt
 	sb.BackgroundTransparency=0.08
 	sb.BorderSizePixel=0
@@ -2065,8 +2078,8 @@ function Win:_build()
 
 	-- Content area
 	local cf=Instance.new("Frame")
-	cf.Size=UDim2.new(1,-137,1,-40)
-	cf.Position=UDim2.fromOffset(137,40)
+	cf.Size=UDim2.new(1,-137,1,-44)
+	cf.Position=UDim2.fromOffset(137,44)
 	cf.BackgroundTransparency=1
 	cf.BorderSizePixel=0
 	cf.Parent=main
