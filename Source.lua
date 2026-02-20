@@ -16,7 +16,7 @@ pcall(function() Icons=loadstring(game:HttpGet("https://raw.nebulasoftworks.xyz/
 local function Icon(name)
 	if Icons then
 		local ok,img=pcall(function()return Icons:GetIcon(name,"Material")end)
-		if ok and img then return img end
+		if ok and img then return "rbxassetid://"..tostring(img) end
 	end
 	return ""
 end
