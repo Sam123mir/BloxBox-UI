@@ -1,140 +1,106 @@
--- [[ BLOXBOX UI: TEST SCRIPT v1.02.0 ]]
--- Script de demostración del framework
+-- [[ BLOXBOX UI: TEST v2.0 PREMIUM ]]
 
--- Cargar el framework
-local BloxBoxUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Sam123mir/BloxBox-UI/master/Source.lua" .. "?v=" .. os.time()))()
+local BloxBoxUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Sam123mir/BloxBox-UI/master/Source.lua?v=" .. os.time()))()
 
--- Crear instancia
 local Library = BloxBoxUI.new()
 
--- Personalizar color de acento (opcional)
-Library:SetAccent(Color3.fromRGB(0, 170, 255))
+-- Color de acento personalizable
+Library:SetAccent(Color3.fromRGB(90, 130, 255))
 
--- Mostrar intro con animación
-Library:ShowIntro()
-task.wait(3.5) -- Esperar que termine la intro
+-- Intro con logo (reemplazar ID cuando subas el logo a Roblox)
+Library:ShowIntro("rbxassetid://123456789", function()
+    -- Esta función se ejecuta DESPUÉS de que termine la intro
 
--- Crear ventana principal
-local Window = Library:CreateWindow({
-    Title = "BloxBox UI | Demo v1.02.0",
-    Size = UDim2.fromOffset(600, 400),
-})
+    local Window = Library:CreateWindow({
+        Title = "BloxBox UI | Premium v2.0",
+        Size = UDim2.fromOffset(580, 380),
+    })
 
--- TAB 1: General
-local MainTab = Window:CreateTab("Principal")
-MainTab:CreateSection("Opciones")
+    -- TAB: Principal
+    local Main = Window:CreateTab("Principal")
+    Main:CreateSection("Funciones")
 
-MainTab:CreateToggle({
-    Name = "Activar Feature",
-    Flag = "feature_enabled",
-    Default = false,
-    Callback = function(val)
-        Library:Notify({
-            Title = "Toggle",
-            Content = "Feature: " .. (val and "ON" or "OFF"),
-            Type = val and "Success" or "Info",
-        })
-    end,
-})
+    Main:CreateToggle({
+        Name = "Activar Feature",
+        Flag = "feature_on",
+        Default = false,
+        Callback = function(v)
+            Library:Notify({ Title = "Toggle", Content = v and "Activado" or "Desactivado", Type = v and "Success" or "Info" })
+        end,
+    })
 
-MainTab:CreateSlider({
-    Name = "Velocidad",
-    Min = 16,
-    Max = 100,
-    Default = 16,
-    Flag = "speed_value",
-    Callback = function(val)
-        local humanoid = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid")
-        if humanoid then humanoid.WalkSpeed = val end
-    end,
-})
+    Main:CreateSlider({
+        Name = "Velocidad",
+        Min = 16, Max = 100, Default = 16,
+        Flag = "speed",
+        Callback = function(v)
+            pcall(function() game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = v end)
+        end,
+    })
 
-MainTab:CreateButton({
-    Name = "Saludar",
-    Callback = function()
-        Library:Notify({
-            Title = "BloxBox",
-            Content = "¡Hola! El framework está funcionando correctamente 🎉",
-            Type = "Success",
-        })
-    end,
-})
+    Main:CreateButton({
+        Name = "Saludar",
+        Callback = function()
+            Library:Notify({ Title = "BloxBox", Content = "Framework funcionando correctamente!", Type = "Success" })
+        end,
+    })
 
-MainTab:CreateSection("Más Opciones")
+    Main:CreateSection("Selección")
 
-MainTab:CreateDropdown({
-    Name = "Seleccionar Modo",
-    List = {"Normal", "Turbo", "God Mode"},
-    Default = "Normal",
-    Flag = "game_mode",
-    Callback = function(val)
-        Library:Notify({
-            Title = "Modo",
-            Content = "Cambiado a: " .. val,
-            Type = "Info",
-        })
-    end,
-})
+    Main:CreateDropdown({
+        Name = "Modo de Juego",
+        List = {"Normal", "Turbo", "God Mode"},
+        Default = "Normal",
+        Flag = "mode",
+        Callback = function(v)
+            Library:Notify({ Title = "Modo", Content = "Seleccionado: " .. v, Type = "Info" })
+        end,
+    })
 
-MainTab:CreateTextBox({
-    Name = "Nombre personalizado",
-    Default = "",
-    Placeholder = "Escribe tu nombre...",
-    Flag = "custom_name",
-    Callback = function(text)
-        print("[BloxBox] Nombre: " .. text)
-    end,
-})
+    Main:CreateTextBox({
+        Name = "Nickname",
+        Placeholder = "Escribe un nombre...",
+        Flag = "nickname",
+        Callback = function(t) print("[BloxBox] Nickname: " .. t) end,
+    })
 
--- TAB 2: Configuración
-local ConfigTab = Window:CreateTab("Config")
+    -- TAB: Config
+    local Config = Window:CreateTab("Config")
 
-ConfigTab:CreateToggle({
-    Name = "Anti-AFK",
-    Flag = "anti_afk",
-    Default = true,
-    Callback = function(val)
-        if val then
-            Library:Notify({ Title = "Anti-AFK", Content = "Activado", Type = "Success" })
-        end
-    end,
-})
+    Config:CreateToggle({
+        Name = "Anti-AFK",
+        Flag = "anti_afk",
+        Default = true,
+    })
 
-ConfigTab:CreateKeybind({
-    Name = "Toggle UI",
-    Flag = "toggle_keybind",
-    Default = Enum.KeyCode.RightControl,
-    Callback = function(key)
-        Library:Notify({
-            Title = "Keybind",
-            Content = "Cambiado a: " .. key.Name,
-            Type = "Info",
-        })
-    end,
-})
+    Config:CreateKeybind({
+        Name = "Toggle UI",
+        Flag = "toggle_key",
+        Default = Enum.KeyCode.RightControl,
+    })
 
-ConfigTab:CreateButton({
-    Name = "Guardar Config",
-    Callback = function()
-        Library:SaveConfig("default")
-        Library:Notify({ Title = "Config", Content = "Guardada exitosamente", Type = "Success" })
-    end,
-})
+    Config:CreateButton({
+        Name = "Guardar Config",
+        Callback = function()
+            Library:SaveConfig("default")
+            Library:Notify({ Title = "Config", Content = "Guardada", Type = "Success" })
+        end,
+    })
 
-ConfigTab:CreateButton({
-    Name = "Cargar Config",
-    Callback = function()
-        Library:LoadConfig("default")
-        Library:Notify({ Title = "Config", Content = "Cargada exitosamente", Type = "Info" })
-    end,
-})
+    Config:CreateButton({
+        Name = "Cargar Config",
+        Callback = function()
+            Library:LoadConfig("default")
+            Library:Notify({ Title = "Config", Content = "Cargada", Type = "Info" })
+        end,
+    })
 
--- TAB 3: Info
-local InfoTab = Window:CreateTab("Info")
-InfoTab:CreateLabel("BloxBox UI Framework v1.02.0")
-InfoTab:CreateLabel("by Samir & Team")
-InfoTab:CreateLabel("github.com/Sam123mir/BloxBox-UI")
-InfoTab:CreateSection("Créditos")
-InfoTab:CreateLabel("Diseño: Premium Dark Theme")
-InfoTab:CreateLabel("Componentes: 8 tipos")
-InfoTab:CreateLabel("Arquitectura: Single-File")
+    -- TAB: Info
+    local Info = Window:CreateTab("Info")
+    Info:CreateLabel("BloxBox UI v2.0 Premium")
+    Info:CreateLabel("by Samir & Team")
+    Info:CreateSection("Arquitectura")
+    Info:CreateLabel("Single-File | 0 require()")
+    Info:CreateLabel("Compatible con todos los executors")
+    Info:CreateLabel("github.com/Sam123mir/BloxBox-UI")
+end)
