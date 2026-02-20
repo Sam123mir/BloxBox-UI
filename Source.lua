@@ -16,7 +16,11 @@ pcall(function() Icons=loadstring(game:HttpGet("https://raw.nebulasoftworks.xyz/
 local function Icon(name)
 	if Icons then
 		local ok,img=pcall(function()return Icons:GetIcon(name,"Material")end)
-		if ok and img then return "rbxassetid://"..tostring(img) end
+		if ok and img then
+			local s=tostring(img)
+			if string.find(s,"rbxassetid") or string.find(s,"http") then return s end
+			return "rbxassetid://"..s
+		end
 	end
 	return ""
 end
@@ -474,6 +478,7 @@ local function ShowIntro(logoId,cb)
 	local bg=Instance.new("Frame")
 	bg.Size=UDim2.fromScale(1,1)
 	bg.BackgroundColor3=Color3.fromRGB(6,6,10)
+	bg.BackgroundTransparency=0.4
 	bg.BorderSizePixel=0
 	bg.Parent=gui
 
@@ -538,7 +543,7 @@ local function ShowIntro(logoId,cb)
 	sub.Position=UDim2.new(0.5,0,0,100)
 	sub.AnchorPoint=Vector2.new(0.5,0)
 	sub.BackgroundTransparency=1
-	sub.Text="v3.0 Premium"
+	sub.Text="v3.04.1 Premium"
 	sub.TextColor3=T.Accent
 	sub.Font=T.FontSB
 	sub.TextSize=11
@@ -627,50 +632,65 @@ end
 -- ║           COMPONENTS v3.0           ║
 -- ╚══════════════════════════════════════╝
 
--- SECTION DIVIDER (improved pill style)
+-- SECTION DIVIDER (with Material horizontal_rule icon)
 local function CSection(tab,name)
 	local f=Instance.new("Frame")
 	f.Size=UDim2.new(1,0,0,28)
 	f.BackgroundTransparency=1
 	f.Parent=tab._ct
 
+	-- Left line
+	local lnL=Instance.new("Frame")
+	lnL.Size=UDim2.fromOffset(6,1)
+	lnL.Position=UDim2.fromOffset(0,14)
+	lnL.BackgroundColor3=T.Accent
+	lnL.BackgroundTransparency=0.5
+	lnL.BorderSizePixel=0
+	lnL.Parent=f
+	Corner(lnL,1)
+
+	-- Pill badge with icon + text
 	local pill=Instance.new("Frame")
-	pill.Size=UDim2.new(0,0,0,18)
+	pill.Size=UDim2.new(0,0,0,20)
 	pill.AutomaticSize=Enum.AutomaticSize.X
-	pill.Position=UDim2.fromOffset(0,5)
+	pill.Position=UDim2.fromOffset(10,4)
 	pill.BackgroundColor3=T.Surface
-	pill.BackgroundTransparency=0.3
+	pill.BackgroundTransparency=0.2
 	pill.BorderSizePixel=0
 	pill.Parent=f
-	Corner(pill,9)
-	Stroke(pill,T.Border,1,0.5)
+	Corner(pill,10)
+	Stroke(pill,T.Border,1,0.45)
 
-	local dot=Instance.new("Frame")
-	dot.Size=UDim2.fromOffset(5,5)
-	dot.Position=UDim2.fromOffset(8,6)
-	dot.BackgroundColor3=T.Accent
-	dot.BorderSizePixel=0
-	dot.Parent=pill
-	Corner(dot,3)
+	-- horizontal_rule icon from Material
+	local secIc=Instance.new("ImageLabel")
+	secIc.Size=UDim2.fromOffset(12,12)
+	secIc.Position=UDim2.fromOffset(7,4)
+	secIc.BackgroundTransparency=1
+	secIc.ImageColor3=T.Accent
+	secIc.Image=Icon("horizontal_rule")
+	secIc.Parent=pill
 
 	local lb=Instance.new("TextLabel")
 	lb.AutomaticSize=Enum.AutomaticSize.X
-	lb.Size=UDim2.new(0,0,0,18)
-	lb.Position=UDim2.fromOffset(19,0)
+	lb.Size=UDim2.new(0,0,0,20)
+	lb.Position=UDim2.fromOffset(23,0)
 	lb.BackgroundTransparency=1
-	lb.Text=name.."  "
+	lb.Text=name.."   "
 	lb.TextColor3=T.TextDim
 	lb.Font=T.FontSB
 	lb.TextSize=10
 	lb.Parent=pill
 
-	local ln=Instance.new("Frame")
-	ln.Size=UDim2.new(1,0,0,1)
-	ln.Position=UDim2.new(0,0,1,-1)
-	ln.BackgroundColor3=T.Border
-	ln.BackgroundTransparency=0.55
-	ln.BorderSizePixel=0
-	ln.Parent=f
+	-- Right line (fills remaining space)
+	local lnR=Instance.new("Frame")
+	lnR.Size=UDim2.new(1,0,0,1)
+	lnR.Position=UDim2.new(0,0,0.5,0)
+	lnR.BackgroundColor3=T.Border
+	lnR.BackgroundTransparency=0.45
+	lnR.BorderSizePixel=0
+	lnR.ZIndex=f.ZIndex-1
+	lnR.Parent=f
+	Corner(lnR,1)
 end
 
 -- BUTTON (redesigned with ripple + gradient + icon ring)
@@ -1603,28 +1623,28 @@ function Tab:CreateProgress(o)return CProgress(self,o)end
 -- ╚══════════════════════════════════════╝
 local function MakeFooter(mainF)
 	local ft=Instance.new("Frame")
-	ft.Size=UDim2.new(1,0,0,36)
-	ft.Position=UDim2.new(0,0,1,2)
+	ft.Size=UDim2.new(1,0,0,42)
+	ft.Position=UDim2.new(0,0,1,3)
 	ft.BackgroundColor3=T.BgAlt
 	ft.BackgroundTransparency=0.04
 	ft.BorderSizePixel=0
 	ft.Parent=mainF
-	Corner(ft,8)
+	Corner(ft,10)
 	Stroke(ft,T.Border,1,0.5)
 	Grad(ft,Color3.fromRGB(20,20,30),Color3.fromRGB(16,16,22))
 
 	-- Avatar with ring
 	local avRing=Instance.new("Frame")
-	avRing.Size=UDim2.fromOffset(30,30)
-	avRing.Position=UDim2.fromOffset(7,3)
+	avRing.Size=UDim2.fromOffset(32,32)
+	avRing.Position=UDim2.fromOffset(8,5)
 	avRing.BackgroundColor3=T.Accent
-	avRing.BackgroundTransparency=0.7
+	avRing.BackgroundTransparency=0.65
 	avRing.BorderSizePixel=0
 	avRing.Parent=ft
-	Corner(avRing,15)
+	Corner(avRing,16)
 
 	local av=Instance.new("ImageLabel")
-	av.Size=UDim2.fromOffset(26,26)
+	av.Size=UDim2.fromOffset(28,28)
 	av.Position=UDim2.fromOffset(2,2)
 	av.BackgroundColor3=T.BgAlt
 	av.BorderSizePixel=0
@@ -1636,29 +1656,29 @@ local function MakeFooter(mainF)
 	end)
 
 	local un=Instance.new("TextLabel")
-	un.Size=UDim2.fromOffset(88,32)
-	un.Position=UDim2.fromOffset(40,2)
+	un.Size=UDim2.fromOffset(88,36)
+	un.Position=UDim2.fromOffset(44,3)
 	un.BackgroundTransparency=1
 	un.Text=P.Name
 	un.TextColor3=T.Text
 	un.Font=T.FontSB
-	un.TextSize=10
+	un.TextSize=11
 	un.TextXAlignment=Enum.TextXAlignment.Left
 	un.Parent=ft
 
-	Divider(ft, UDim2.fromOffset(128,8))
+	Divider(ft, UDim2.fromOffset(134,10))
 
 	local exIc=Instance.new("ImageLabel")
-	exIc.Size=UDim2.fromOffset(13,13)
-	exIc.Position=UDim2.fromOffset(136,11)
+	exIc.Size=UDim2.fromOffset(14,14)
+	exIc.Position=UDim2.fromOffset(142,14)
 	exIc.BackgroundTransparency=1
 	exIc.ImageColor3=T.TextMut
 	exIc.Image=Icon("memory")
 	exIc.Parent=ft
 
 	local exL=Instance.new("TextLabel")
-	exL.Size=UDim2.fromOffset(75,32)
-	exL.Position=UDim2.fromOffset(152,2)
+	exL.Size=UDim2.fromOffset(80,36)
+	exL.Position=UDim2.fromOffset(160,3)
 	exL.BackgroundTransparency=1
 	exL.Text=DetectExecutor()
 	exL.TextColor3=T.TextMut
@@ -1667,20 +1687,20 @@ local function MakeFooter(mainF)
 	exL.TextXAlignment=Enum.TextXAlignment.Left
 	exL.Parent=ft
 
-	Divider(ft, UDim2.fromOffset(228,8))
+	Divider(ft, UDim2.fromOffset(240,10))
 
 	-- FPS (colored dynamically)
 	local fpsIc=Instance.new("ImageLabel")
-	fpsIc.Size=UDim2.fromOffset(12,12)
-	fpsIc.Position=UDim2.fromOffset(236,12)
+	fpsIc.Size=UDim2.fromOffset(14,14)
+	fpsIc.Position=UDim2.fromOffset(248,14)
 	fpsIc.BackgroundTransparency=1
 	fpsIc.ImageColor3=T.Succ
 	fpsIc.Image=Icon("speed")
 	fpsIc.Parent=ft
 
 	local fpsTxt=Instance.new("TextLabel")
-	fpsTxt.Size=UDim2.fromOffset(52,32)
-	fpsTxt.Position=UDim2.fromOffset(252,2)
+	fpsTxt.Size=UDim2.fromOffset(52,36)
+	fpsTxt.Position=UDim2.fromOffset(266,3)
 	fpsTxt.BackgroundTransparency=1
 	fpsTxt.Text="-- fps"
 	fpsTxt.TextColor3=T.Succ
@@ -1689,20 +1709,20 @@ local function MakeFooter(mainF)
 	fpsTxt.TextXAlignment=Enum.TextXAlignment.Left
 	fpsTxt.Parent=ft
 
-	Divider(ft, UDim2.fromOffset(305,8))
+	Divider(ft, UDim2.fromOffset(320,10))
 
 	-- Ping (colored by latency)
 	local pgIc=Instance.new("ImageLabel")
-	pgIc.Size=UDim2.fromOffset(12,12)
-	pgIc.Position=UDim2.fromOffset(312,12)
+	pgIc.Size=UDim2.fromOffset(14,14)
+	pgIc.Position=UDim2.fromOffset(328,14)
 	pgIc.BackgroundTransparency=1
 	pgIc.ImageColor3=T.Warn
 	pgIc.Image=Icon("wifi")
 	pgIc.Parent=ft
 
 	local pgTxt=Instance.new("TextLabel")
-	pgTxt.Size=UDim2.fromOffset(60,32)
-	pgTxt.Position=UDim2.fromOffset(328,2)
+	pgTxt.Size=UDim2.fromOffset(65,36)
+	pgTxt.Position=UDim2.fromOffset(346,3)
 	pgTxt.BackgroundTransparency=1
 	pgTxt.Text="-- ms"
 	pgTxt.TextColor3=T.Warn
@@ -1977,26 +1997,41 @@ function Win:_build()
 
 	-- ── SIDEBAR ──────────────────────────────────────────────────────
 	local sb=Instance.new("Frame")
-	sb.Size=UDim2.new(0,132,1,-40)
+	sb.Size=UDim2.new(0,136,1,-40)
 	sb.Position=UDim2.fromOffset(0,40)
 	sb.BackgroundColor3=T.BgAlt
-	sb.BackgroundTransparency=0.15
+	sb.BackgroundTransparency=0.08
 	sb.BorderSizePixel=0
 	sb.Parent=main
-	Grad(sb,Color3.fromRGB(18,18,26),Color3.fromRGB(12,12,18),180)
+	Corner(sb,0)
+	Grad(sb,Color3.fromRGB(16,16,24),Color3.fromRGB(11,11,16),180)
+	Stroke(sb,T.Border,1,0.4)
 
-	-- Sidebar right border
+	-- Sidebar right accent border (gradient line)
 	local sbBorder=Instance.new("Frame")
-	sbBorder.Size=UDim2.new(0,1,1,0)
-	sbBorder.Position=UDim2.new(1,-1,0,0)
-	sbBorder.BackgroundColor3=T.Border
-	sbBorder.BackgroundTransparency=0.3
+	sbBorder.Size=UDim2.new(0,1,1,-8)
+	sbBorder.Position=UDim2.new(1,-1,0,4)
+	sbBorder.BackgroundColor3=T.BorderAc
+	sbBorder.BackgroundTransparency=0.45
 	sbBorder.BorderSizePixel=0
 	sbBorder.Parent=sb
+	local sbBorderGrad=Instance.new("UIGradient")
+	sbBorderGrad.Transparency=NumberSequence.new({NumberSequenceKeypoint.new(0,0.8),NumberSequenceKeypoint.new(0.3,0),NumberSequenceKeypoint.new(0.7,0),NumberSequenceKeypoint.new(1,0.8)})
+	sbBorderGrad.Rotation=90
+	sbBorderGrad.Parent=sbBorder
+
+	-- NAVIGATION label with icon
+	local navIc=Instance.new("ImageLabel")
+	navIc.Size=UDim2.fromOffset(11,11)
+	navIc.Position=UDim2.fromOffset(10,10)
+	navIc.BackgroundTransparency=1
+	navIc.ImageColor3=T.TextMut
+	navIc.Image=Icon("menu")
+	navIc.Parent=sb
 
 	local sbLbl=Instance.new("TextLabel")
-	sbLbl.Size=UDim2.new(1,-10,0,14)
-	sbLbl.Position=UDim2.fromOffset(10,10)
+	sbLbl.Size=UDim2.new(1,-28,0,14)
+	sbLbl.Position=UDim2.fromOffset(24,9)
 	sbLbl.BackgroundTransparency=1
 	sbLbl.Text="NAVIGATION"
 	sbLbl.TextColor3=T.TextMut
@@ -2005,18 +2040,22 @@ function Win:_build()
 	sbLbl.TextXAlignment=Enum.TextXAlignment.Left
 	sbLbl.Parent=sb
 
+	-- Divider below label (styled with gradient)
 	local sbDiv=Instance.new("Frame")
 	sbDiv.Size=UDim2.new(1,-16,0,1)
 	sbDiv.Position=UDim2.fromOffset(8,26)
 	sbDiv.BackgroundColor3=T.Border
-	sbDiv.BackgroundTransparency=0.4
+	sbDiv.BackgroundTransparency=0.3
 	sbDiv.BorderSizePixel=0
 	sbDiv.Parent=sb
 	Corner(sbDiv,1)
+	local sbDivGrad=Instance.new("UIGradient")
+	sbDivGrad.Transparency=NumberSequence.new({NumberSequenceKeypoint.new(0,0),NumberSequenceKeypoint.new(1,1)})
+	sbDivGrad.Parent=sbDiv
 
 	local tlc=Instance.new("Frame")
-	tlc.Size=UDim2.new(1,-8,1,-34)
-	tlc.Position=UDim2.fromOffset(4,30)
+	tlc.Size=UDim2.new(1,-10,1,-36)
+	tlc.Position=UDim2.fromOffset(5,32)
 	tlc.BackgroundTransparency=1
 	tlc.Parent=sb
 	local sl=Instance.new("UIListLayout")
@@ -2026,8 +2065,8 @@ function Win:_build()
 
 	-- Content area
 	local cf=Instance.new("Frame")
-	cf.Size=UDim2.new(1,-133,1,-40)
-	cf.Position=UDim2.fromOffset(133,40)
+	cf.Size=UDim2.new(1,-137,1,-40)
+	cf.Position=UDim2.fromOffset(137,40)
 	cf.BackgroundTransparency=1
 	cf.BorderSizePixel=0
 	cf.Parent=main
