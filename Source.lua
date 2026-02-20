@@ -285,23 +285,76 @@ local function LoadCfg(s,n)
 	end)
 end
 
--- Drag
+-- Drag (instant detection - no delay)
 local function MakeDrag(h,f)
 	local dr,ds,sp=false,nil,nil
 	h.InputBegan:Connect(function(i)
 		if i.UserInputType==Enum.UserInputType.MouseButton1 or
 		   i.UserInputType==Enum.UserInputType.Touch then
 			dr=true;ds=i.Position;sp=f.Position
-			i.Changed:Connect(function()
-				if i.UserInputState==Enum.UserInputState.End then dr=false end
-			end)
+		end
+	end)
+	h.InputEnded:Connect(function(i)
+		if i.UserInputType==Enum.UserInputType.MouseButton1 or
+		   i.UserInputType==Enum.UserInputType.Touch then
+			dr=false
 		end
 	end)
 	UIS.InputChanged:Connect(function(i)
 		if dr and(i.UserInputType==Enum.UserInputType.MouseMovement or
 				  i.UserInputType==Enum.UserInputType.Touch)then
 			local d=i.Position-ds
-			Tw(f,{Position=UDim2.new(sp.X.Scale,sp.X.Offset+d.X,sp.Y.Scale,sp.Y.Offset+d.Y)},TI.Instant)
+			f.Position=UDim2.new(sp.X.Scale,sp.X.Offset+d.X,sp.Y.Scale,sp.Y.Offset+d.Y)
+		end
+	end)
+end
+
+-- Resize handles for main frame
+local function MakeResize(main,minW,minH)
+	minW=minW or 500; minH=minH or 350
+	local rz=Instance.new("TextButton")
+	rz.Size=UDim2.fromOffset(18,18)
+	rz.Position=UDim2.new(1,-16,1,-16)
+	rz.BackgroundTransparency=1
+	rz.Text=""
+	rz.AutoButtonColor=false
+	rz.ZIndex=main.ZIndex+5
+	rz.Parent=main
+
+	-- Visual grip dots
+	for r=0,1 do for c=0,1 do
+		if r+c>0 then
+			local dot=Instance.new("Frame")
+			dot.Size=UDim2.fromOffset(3,3)
+			dot.Position=UDim2.fromOffset(4+c*6,4+r*6)
+			dot.BackgroundColor3=T.TextMut
+			dot.BackgroundTransparency=0.4
+			dot.BorderSizePixel=0
+			dot.Parent=rz
+			Corner(dot,2)
+		end
+	end end
+
+	local dragging,startPos,startSz=false,nil,nil
+	rz.InputBegan:Connect(function(i)
+		if i.UserInputType==Enum.UserInputType.MouseButton1 or
+		   i.UserInputType==Enum.UserInputType.Touch then
+			dragging=true; startPos=i.Position; startSz=main.Size
+		end
+	end)
+	rz.InputEnded:Connect(function(i)
+		if i.UserInputType==Enum.UserInputType.MouseButton1 or
+		   i.UserInputType==Enum.UserInputType.Touch then
+			dragging=false
+		end
+	end)
+	UIS.InputChanged:Connect(function(i)
+		if dragging and(i.UserInputType==Enum.UserInputType.MouseMovement or
+						  i.UserInputType==Enum.UserInputType.Touch)then
+			local d=i.Position-startPos
+			local nw=math.max(minW,startSz.X.Offset+d.X)
+			local nh=math.max(minH,startSz.Y.Offset+d.Y)
+			main.Size=UDim2.fromOffset(nw,nh)
 		end
 	end)
 end
@@ -633,65 +686,48 @@ end
 -- ║           COMPONENTS v3.0           ║
 -- ╚══════════════════════════════════════╝
 
--- SECTION DIVIDER (with Material horizontal_rule icon)
+-- SECTION DIVIDER (v3.2 - gradient line with label)
 local function CSection(tab,name)
 	local f=Instance.new("Frame")
-	f.Size=UDim2.new(1,0,0,28)
+	f.Size=UDim2.new(1,0,0,30)
 	f.BackgroundTransparency=1
 	f.Parent=tab._ct
 
-	-- Left line
-	local lnL=Instance.new("Frame")
-	lnL.Size=UDim2.fromOffset(6,1)
-	lnL.Position=UDim2.fromOffset(0,14)
-	lnL.BackgroundColor3=T.Accent
-	lnL.BackgroundTransparency=0.5
-	lnL.BorderSizePixel=0
-	lnL.Parent=f
-	Corner(lnL,1)
+	-- Full-width gradient line behind
+	local lineB=Instance.new("Frame")
+	lineB.Size=UDim2.new(1,0,0,1)
+	lineB.Position=UDim2.new(0,0,0.5,0)
+	lineB.BackgroundColor3=T.Border
+	lineB.BackgroundTransparency=0.3
+	lineB.BorderSizePixel=0
+	lineB.ZIndex=f.ZIndex
+	lineB.Parent=f
+	local lGrad=Instance.new("UIGradient")
+	lGrad.Transparency=NumberSequence.new({NumberSequenceKeypoint.new(0,0),NumberSequenceKeypoint.new(0.4,0.3),NumberSequenceKeypoint.new(1,0.85)})
+	lGrad.Parent=lineB
 
-	-- Pill badge with icon + text
-	local pill=Instance.new("Frame")
-	pill.Size=UDim2.new(0,0,0,20)
-	pill.AutomaticSize=Enum.AutomaticSize.X
-	pill.Position=UDim2.fromOffset(10,4)
-	pill.BackgroundColor3=T.Surface
-	pill.BackgroundTransparency=0.2
-	pill.BorderSizePixel=0
-	pill.Parent=f
-	Corner(pill,10)
-	Stroke(pill,T.Border,1,0.45)
+	-- Accent dot
+	local acDot=Instance.new("Frame")
+	acDot.Size=UDim2.fromOffset(4,4)
+	acDot.Position=UDim2.fromOffset(0,13)
+	acDot.BackgroundColor3=T.Accent
+	acDot.BorderSizePixel=0
+	acDot.Parent=f
+	Corner(acDot,2)
 
-	-- horizontal_rule icon from Material
-	local secIc=Instance.new("ImageLabel")
-	secIc.Size=UDim2.fromOffset(12,12)
-	secIc.Position=UDim2.fromOffset(7,4)
-	secIc.BackgroundTransparency=1
-	secIc.ImageColor3=T.Accent
-	secIc.Image=Icon("horizontal_rule")
-	secIc.Parent=pill
-
+	-- Section label (uppercase, spaced)
 	local lb=Instance.new("TextLabel")
 	lb.AutomaticSize=Enum.AutomaticSize.X
-	lb.Size=UDim2.new(0,0,0,20)
-	lb.Position=UDim2.fromOffset(23,0)
-	lb.BackgroundTransparency=1
-	lb.Text=name.."   "
-	lb.TextColor3=T.TextDim
-	lb.Font=T.FontSB
-	lb.TextSize=10
-	lb.Parent=pill
-
-	-- Right line (fills remaining space)
-	local lnR=Instance.new("Frame")
-	lnR.Size=UDim2.new(1,0,0,1)
-	lnR.Position=UDim2.new(0,0,0.5,0)
-	lnR.BackgroundColor3=T.Border
-	lnR.BackgroundTransparency=0.45
-	lnR.BorderSizePixel=0
-	lnR.ZIndex=f.ZIndex-1
-	lnR.Parent=f
-	Corner(lnR,1)
+	lb.Size=UDim2.new(0,0,0,30)
+	lb.Position=UDim2.fromOffset(10,0)
+	lb.BackgroundColor3=T.Bg
+	lb.BackgroundTransparency=0.1
+	lb.Text="  "..string.upper(name).."  "
+	lb.TextColor3=T.TextMut
+	lb.Font=T.FontB
+	lb.TextSize=9
+	lb.Parent=f
+	Corner(lb,4)
 end
 
 -- BUTTON (redesigned with ripple + gradient + icon ring)
@@ -1511,19 +1547,20 @@ end
 
 function Tab:_build()
 	local tb=Instance.new("TextButton")
-	tb.Size=UDim2.new(1,0,0,34)
+	tb.Size=UDim2.new(1,-6,0,36)
+	tb.Position=UDim2.fromOffset(3,0)
 	tb.BackgroundTransparency=1
 	tb.BackgroundColor3=T.SurfHov
 	tb.BorderSizePixel=0
 	tb.Text=""
 	tb.AutoButtonColor=false
 	tb.Parent=self._w._tl
-	Corner(tb,7)
+	Corner(tb,8)
 	self._tb=tb
 
 	-- Active indicator bar (left)
 	local ind=Instance.new("Frame")
-	ind.Size=UDim2.new(0,3,0,20)
+	ind.Size=UDim2.new(0,3,0,22)
 	ind.Position=UDim2.fromOffset(0,7)
 	ind.BackgroundColor3=T.Accent
 	ind.BackgroundTransparency=1
@@ -1532,26 +1569,37 @@ function Tab:_build()
 	Corner(ind,2)
 	self._ind=ind
 
+	-- Icon background circle
+	local icBg=Instance.new("Frame")
+	icBg.Size=UDim2.fromOffset(26,26)
+	icBg.Position=UDim2.fromOffset(8,5)
+	icBg.BackgroundColor3=T.Accent
+	icBg.BackgroundTransparency=0.88
+	icBg.BorderSizePixel=0
+	icBg.Parent=tb
+	Corner(icBg,13)
+	self._icBg=icBg
+
 	-- Icon
 	local icName=TabIcons[self._idx] or "circle"
 	local ic=Instance.new("ImageLabel")
 	ic.Size=UDim2.fromOffset(16,16)
-	ic.Position=UDim2.fromOffset(13,9)
+	ic.Position=UDim2.fromOffset(5,5)
 	ic.BackgroundTransparency=1
 	ic.ImageColor3=T.TextMut
 	ic.Image=Icon(icName)
-	ic.Parent=tb
+	ic.Parent=icBg
 	self._ic=ic
 
 	-- Name
 	local nm=Instance.new("TextLabel")
-	nm.Size=UDim2.new(1,-36,1,0)
-	nm.Position=UDim2.fromOffset(34,0)
+	nm.Size=UDim2.new(1,-44,1,0)
+	nm.Position=UDim2.fromOffset(38,0)
 	nm.BackgroundTransparency=1
 	nm.Text=self._name
 	nm.TextColor3=T.TextMut
-	nm.Font=T.Font
-	nm.TextSize=12
+	nm.Font=T.FontSB
+	nm.TextSize=11
 	nm.TextXAlignment=Enum.TextXAlignment.Left
 	nm.Parent=tb
 	self._nm=nm
@@ -1578,31 +1626,35 @@ function Tab:_build()
 	tb.MouseButton1Click:Connect(function()self._w:SelectTab(self)end)
 	tb.MouseEnter:Connect(function()
 		if self._w._sel~=self then
-			Tw(tb,{BackgroundTransparency=0.78},TI.Fast)
+			Tw(tb,{BackgroundTransparency=0.75},TI.Fast)
 			Tw(ic,{ImageColor3=T.TextDim},TI.Fast)
+			Tw(icBg,{BackgroundTransparency=0.8},TI.Fast)
 		end
 	end)
 	tb.MouseLeave:Connect(function()
 		if self._w._sel~=self then
 			Tw(tb,{BackgroundTransparency=1},TI.Fast)
 			Tw(ic,{ImageColor3=T.TextMut},TI.Fast)
+			Tw(icBg,{BackgroundTransparency=0.88},TI.Fast)
 		end
 	end)
 end
 
 function Tab:Show()
 	self._ct.Visible=true
-	Tw(self._tb,{BackgroundTransparency=0.72},TI.Fast)
+	Tw(self._tb,{BackgroundTransparency=0.65},TI.Normal)
 	Tw(self._nm,{TextColor3=T.Accent},TI.Fast)
 	Tw(self._ic,{ImageColor3=T.Accent},TI.Fast)
-	Tw(self._ind,{BackgroundTransparency=0},TI.Fast)
+	Tw(self._icBg,{BackgroundTransparency=0.72},TI.Normal)
+	Tw(self._ind,{BackgroundTransparency=0},TI.Normal)
 end
 function Tab:Hide()
 	self._ct.Visible=false
-	Tw(self._tb,{BackgroundTransparency=1},TI.Fast)
+	Tw(self._tb,{BackgroundTransparency=1},TI.Normal)
 	Tw(self._nm,{TextColor3=T.TextMut},TI.Fast)
 	Tw(self._ic,{ImageColor3=T.TextMut},TI.Fast)
-	Tw(self._ind,{BackgroundTransparency=1},TI.Fast)
+	Tw(self._icBg,{BackgroundTransparency=0.88},TI.Normal)
+	Tw(self._ind,{BackgroundTransparency=1},TI.Normal)
 end
 
 function Tab:CreateSection(n)CSection(self,n)end
@@ -1767,7 +1819,7 @@ end
 function Win:_build()
 	local gui=MakeGUI("BBW",50)
 	self._gui=gui
-	local sz=self._o.Size or UDim2.fromOffset(650,460)
+	local sz=self._o.Size or UDim2.fromOffset(680,480)
 
 	-- ── MINI BAR (minimize state) ─────────────────────────────────────
 	local mbar=Instance.new("Frame")
@@ -1799,7 +1851,7 @@ function Win:_build()
 	mLogo.Size=UDim2.fromOffset(26,26)
 	mLogo.Position=UDim2.fromOffset(6,6)
 	mLogo.BackgroundTransparency=1
-	mLogo.Image="rbxassetid://130827302215106"
+	mLogo.Image="rbxassetid://74440190043939"
 	mLogo.Parent=mLogoBg
 
 	local mBtn=Instance.new("TextButton")
@@ -1818,60 +1870,37 @@ function Win:_build()
 
 	Divider(mbar,UDim2.fromOffset(195,12))
 
-	-- Drag icon (bigger, visual)
-	local mDragBg=Instance.new("Frame")
-	mDragBg.Size=UDim2.fromOffset(36,36)
-	mDragBg.Position=UDim2.fromOffset(206,10)
-	mDragBg.BackgroundColor3=T.BgAlt
-	mDragBg.BackgroundTransparency=0.3
-	mDragBg.BorderSizePixel=0
-	mDragBg.Parent=mbar
-	Corner(mDragBg,8)
-	Stroke(mDragBg,T.Border,1,0.5)
-
-	local mDragIc=Instance.new("ImageLabel")
-	mDragIc.Size=UDim2.fromOffset(20,20)
-	mDragIc.Position=UDim2.fromOffset(8,8)
-	mDragIc.BackgroundTransparency=1
-	mDragIc.ImageColor3=T.TextDim
-	mDragIc.Image=Icon("open_with")
-	mDragIc.Parent=mDragBg
-
-	-- Minimize button on minibar
-	local mMin=Instance.new("TextButton")
-	mMin.Size=UDim2.fromOffset(30,30)
-	mMin.Position=UDim2.fromOffset(250,12)
-	mMin.BackgroundColor3=T.Warn
-	mMin.BackgroundTransparency=0.75
-	mMin.Text=""
-	mMin.BorderSizePixel=0
-	mMin.AutoButtonColor=false
-	mMin.Parent=mbar
-	Corner(mMin,15)
-	local mMinIc=Instance.new("ImageLabel")
-	mMinIc.Size=UDim2.fromOffset(16,16)
-	mMinIc.Position=UDim2.fromOffset(7,7)
-	mMinIc.BackgroundTransparency=1
-	mMinIc.ImageColor3=T.Warn
-	mMinIc.Image=Icon("remove")
-	mMinIc.Parent=mMin
-	mMin.MouseEnter:Connect(function()Tw(mMin,{BackgroundTransparency=0.2},TI.Fast)end)
-	mMin.MouseLeave:Connect(function()Tw(mMin,{BackgroundTransparency=0.75},TI.Fast)end)
+	-- Grip dots pattern (3x2 dots) instead of big drag icon
+	local gripFrame=Instance.new("Frame")
+	gripFrame.Size=UDim2.fromOffset(24,24)
+	gripFrame.Position=UDim2.fromOffset(210,16)
+	gripFrame.BackgroundTransparency=1
+	gripFrame.Parent=mbar
+	for row=0,2 do for col=0,1 do
+		local d=Instance.new("Frame")
+		d.Size=UDim2.fromOffset(3,3)
+		d.Position=UDim2.fromOffset(col*8, row*8)
+		d.BackgroundColor3=T.TextMut
+		d.BackgroundTransparency=0.3
+		d.BorderSizePixel=0
+		d.Parent=gripFrame
+		Corner(d,2)
+	end end
 
 	-- Close button on minibar
 	local mClose=Instance.new("TextButton")
-	mClose.Size=UDim2.fromOffset(30,30)
-	mClose.Position=UDim2.fromOffset(284,12)
+	mClose.Size=UDim2.fromOffset(32,32)
+	mClose.Position=UDim2.fromOffset(280,12)
 	mClose.BackgroundColor3=T.Err
 	mClose.BackgroundTransparency=0.75
 	mClose.Text=""
 	mClose.BorderSizePixel=0
 	mClose.AutoButtonColor=false
 	mClose.Parent=mbar
-	Corner(mClose,15)
+	Corner(mClose,16)
 	local mCloseIc=Instance.new("ImageLabel")
 	mCloseIc.Size=UDim2.fromOffset(16,16)
-	mCloseIc.Position=UDim2.fromOffset(7,7)
+	mCloseIc.Position=UDim2.fromOffset(8,8)
 	mCloseIc.BackgroundTransparency=1
 	mCloseIc.ImageColor3=T.Err
 	mCloseIc.Image=Icon("close")
@@ -1881,7 +1910,6 @@ function Win:_build()
 	mClose.MouseButton1Click:Connect(function()self:Destroy()end)
 
 	mBtn.MouseButton1Click:Connect(function()self:Restore()end)
-	mMin.MouseButton1Click:Connect(function()self:Restore()end)
 	mLogoBg.InputBegan:Connect(function(i)
 		if i.UserInputType==Enum.UserInputType.MouseButton1 then self:Restore()end
 	end)
@@ -1937,7 +1965,7 @@ function Win:_build()
 	hdLogo.Size=UDim2.fromOffset(22,22)
 	hdLogo.Position=UDim2.fromOffset(12,11)
 	hdLogo.BackgroundTransparency=1
-	hdLogo.Image="rbxassetid://130827302215106"
+	hdLogo.Image="rbxassetid://74440190043939"
 	hdLogo.Parent=hd
 
 	local ttl=Instance.new("TextLabel")
@@ -2087,6 +2115,7 @@ function Win:_build()
 
 	MakeFooter(main)
 	MakeDrag(hd,main)
+	MakeResize(main,520,380)
 
 	-- Entrance animation
 	main.BackgroundTransparency=1
@@ -2107,7 +2136,7 @@ end
 
 function Win:Restore()
 	self._mf.Visible=true
-	local sz=self._o.Size or UDim2.fromOffset(590,410)
+	local sz=self._o.Size or UDim2.fromOffset(680,480)
 	self._mf.Size=UDim2.fromOffset(sz.X.Offset-30,sz.Y.Offset-22)
 	Tw(self._mf,{BackgroundTransparency=0,Size=sz},TI.Bounce)
 	Tw(self._mbar,{BackgroundTransparency=1},TI.Fast)
