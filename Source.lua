@@ -6,7 +6,7 @@ local Players=game:GetService("Players");local RS=game:GetService("RunService");
 -- Nebula Icons (Material pack)
 local Icons=nil
 pcall(function() Icons=loadstring(game:HttpGet("https://raw.nebulasoftworks.xyz/nebula-icon-library-loader"))() end)
-local function Icon(name) if Icons then local ok,img=pcall(function()return Icons:GetIcon(name,"Material")end); if ok and img then return img end end; return "" end
+local function Icon(name) if Icons then local ok,id=pcall(function()return Icons:GetIcon(name,"Material")end); if ok and id then return "rbxassetid://"..tostring(id) end end; return "" end
 
 -- Signal
 local Signal={};Signal.__index=Signal
