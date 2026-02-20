@@ -1,33 +1,33 @@
---!strict
+-- BloxBox UI: ConfigManager (Executor Compatible)
 local HttpService = game:GetService("HttpService")
 
 local ConfigManager = {}
 ConfigManager.__index = ConfigManager
 
-function ConfigManager.new(stateManager: any)
+function ConfigManager.new(stateManager)
 	return setmetatable({
 		_state = stateManager,
 		_folder = "SaaS_UI_Configs"
 	}, ConfigManager)
 end
 
-function ConfigManager:Save(name: string)
+function ConfigManager:Save(name)
 	local data = HttpService:JSONEncode(self._state._states)
 	local success, err = pcall(function()
-		if (writefile :: any) then
-			if not (isfolder :: any)(self._folder) then 
-				(makefolder :: any)(self._folder) 
+		if writefile then
+			if not isfolder(self._folder) then 
+				makefolder(self._folder) 
 			end
-			(writefile :: any)(self._folder .. "/" .. name .. ".json", data)
+			writefile(self._folder .. "/" .. name .. ".json", data)
 		end
 	end)
 	return success, err
 end
 
-function ConfigManager:Load(name: string)
+function ConfigManager:Load(name)
 	local success, result = pcall(function()
-		if (readfile :: any) and (isfile :: any)(self._folder .. "/" .. name .. ".json") then
-			local data = (readfile :: any)(self._folder .. "/" .. name .. ".json")
+		if readfile and isfile and isfile(self._folder .. "/" .. name .. ".json") then
+			local data = readfile(self._folder .. "/" .. name .. ".json")
 			local decoded = HttpService:JSONDecode(data)
 			
 			if decoded and typeof(decoded) == "table" then

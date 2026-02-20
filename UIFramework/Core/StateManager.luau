@@ -1,18 +1,18 @@
---!strict
+-- BloxBox UI: StateManager (Executor Compatible)
 local Signal = require(script.Parent.Parent.Utils.Signal)
 
 local StateManager = {}
 StateManager.__index = StateManager
 
-function StateManager.new(instanceId: string)
+function StateManager.new(instanceId)
 	return setmetatable({
 		_id = instanceId,
 		_states = {},
-		_subscribers = {}, -- [flag] = Signal
+		_subscribers = {},
 	}, StateManager)
 end
 
-function StateManager:Set(flag: string, value: any)
+function StateManager:Set(flag, value)
 	if self._states[flag] == value then return end
 	self._states[flag] = value
 	
@@ -21,13 +21,13 @@ function StateManager:Set(flag: string, value: any)
 	end
 end
 
-function StateManager:Get(flag: string, fallback: any?): any
+function StateManager:Get(flag, fallback)
 	local val = self._states[flag]
 	if val == nil then return fallback end
 	return val
 end
 
-function StateManager:Subscribe(flag: string, handler: (any) -> ())
+function StateManager:Subscribe(flag, handler)
 	if not self._subscribers[flag] then
 		self._subscribers[flag] = Signal.new()
 	end

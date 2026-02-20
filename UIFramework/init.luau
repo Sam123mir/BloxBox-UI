@@ -1,54 +1,55 @@
---!strict
+-- BloxBox UI: init (Executor Compatible)
+-- Punto de entrada principal del framework
 local Core = script.Core
+local Components = script.Components
+
 local ThemeManager = require(Core.ThemeManager)
 local StateManager = require(Core.StateManager)
 local ConfigManager = require(Core.ConfigManager)
-local NotificationManager = require(Core.NotificationManager)
 local IntroManager = require(Core.IntroManager)
-local Window = require(script.Components.Window)
+local NotificationManager = require(Core.NotificationManager)
+local WindowManager = require(Core.WindowManager)
 
-local Library = {}
-Library.__index = Library
+local Window = require(Components.Window)
 
-function Library.new()
-	local instanceId = game:GetService("HttpService"):GenerateGUID(false)
+local BloxBoxUI = {}
+BloxBoxUI.__index = BloxBoxUI
+
+function BloxBoxUI.new()
+	local self = setmetatable({}, BloxBoxUI)
 	
-	local self = setmetatable({
-		_id = instanceId,
-		Theme = ThemeManager.new(),
-		State = StateManager.new(instanceId),
-	}, Library)
-	
+	self.Theme = ThemeManager.new()
+	self.State = StateManager.new("main")
 	self.Config = ConfigManager.new(self.State)
+	self.Intro = IntroManager.new(self.Theme)
+	self.Notifications = NotificationManager.new()
+	self.WindowManager = WindowManager
+	
 	return self
 end
 
-function Library:CreateWindow(options)
-	return Window.new(self, options)
-end
-
-function Library:Notify(options)
-	NotificationManager:Notify(self, options)
-end
-
-function Library:ShowIntro()
-	IntroManager:Show(self.Theme:GetTheme())
-end
-
-function Library:SetTheme(themeName: string)
-	self.Theme:SetTheme(themeName)
-end
-
-function Library:SetAccent(color: Color3)
+function BloxBoxUI:SetAccent(color)
 	self.Theme:SetAccent(color)
 end
 
-function Library:SaveConfig(name: string)
+function BloxBoxUI:ShowIntro()
+	self.Intro:Show()
+end
+
+function BloxBoxUI:CreateWindow(options)
+	return Window.new(self, options)
+end
+
+function BloxBoxUI:Notify(options)
+	self.Notifications:Show(options)
+end
+
+function BloxBoxUI:SaveConfig(name)
 	return self.Config:Save(name)
 end
 
-function Library:LoadConfig(name: string)
+function BloxBoxUI:LoadConfig(name)
 	return self.Config:Load(name)
 end
 
-return Library
+return BloxBoxUI

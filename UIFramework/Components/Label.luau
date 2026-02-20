@@ -1,10 +1,10 @@
---!strict
+-- BloxBox UI: Label (Executor Compatible)
 local BaseComponent = require(script.Parent.BaseComponent)
 
 local Label = setmetatable({}, BaseComponent)
 Label.__index = Label
 
-function Label.new(tab: any, text: string)
+function Label.new(tab, text)
 	local self = setmetatable(BaseComponent.new(tab.Library), Label)
 	self.Tab = tab
 	self.Text = text

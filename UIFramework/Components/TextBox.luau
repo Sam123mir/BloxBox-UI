@@ -1,19 +1,18 @@
---!strict
+-- BloxBox UI: TextBox (Executor Compatible)
 local BaseComponent = require(script.Parent.BaseComponent)
-local Types = require(script.Parent.Parent.Types.ComponentTypes)
 
-local TextBox = setmetatable({}, BaseComponent)
-TextBox.__index = TextBox
+local TextBoxComponent = setmetatable({}, BaseComponent)
+TextBoxComponent.__index = TextBoxComponent
 
-function TextBox.new(tab: any, options: Types.TextBoxOptions)
-	local self = setmetatable(BaseComponent.new(tab.Library), TextBox)
+function TextBoxComponent.new(tab, options)
+	local self = setmetatable(BaseComponent.new(tab.Library), TextBoxComponent)
 	self.Tab = tab
 	self.Options = options
 	self:_mount()
 	return self
 end
 
-function TextBox:_mount()
+function TextBoxComponent:_mount()
 	local theme = self.Library.Theme:GetTheme()
 	local state = self.Library.State
 	
@@ -22,7 +21,6 @@ function TextBox:_mount()
 	container.BackgroundColor3 = theme.Colors.Surface
 	container.BorderSizePixel = 0
 	container.Parent = self.Tab.Container
-
 	Instance.new("UICorner", container).CornerRadius = UDim.new(0, 6)
 
 	local title = Instance.new("TextLabel")
@@ -31,6 +29,9 @@ function TextBox:_mount()
 	title.BackgroundTransparency = 1
 	title.Text = self.Options.Name
 	title.TextColor3 = theme.Colors.Text
+	title.Font = theme.Typography.MainFont
+	title.TextSize = theme.Typography.BaseSize
+	title.TextXAlignment = Enum.TextXAlignment.Left
 	title.Parent = container
 
 	local box = Instance.new("TextBox")
@@ -50,10 +51,12 @@ function TextBox:_mount()
 
 	box.FocusLost:Connect(function()
 		state:Set(self.Options.Flag, box.Text)
-		self.Options.Callback(box.Text)
+		if self.Options.Callback then
+			self.Options.Callback(box.Text)
+		end
 	end)
 	
 	state:Set(self.Options.Flag, self.Options.Default or "")
 end
 
-return TextBox
+return TextBoxComponent

@@ -1,10 +1,10 @@
---!strict
+-- BloxBox UI: DragSystem (Executor Compatible)
 local UserInputService = game:GetService("UserInputService")
 local Maid = require(script.Parent.Maid)
 
 local DragSystem = {}
 
-function DragSystem.new(frame: GuiObject, parent: GuiObject)
+function DragSystem.new(frame, parent)
 	local dragging = false
 	local dragInput, dragStart, startPos
 	local maid = Maid.new()

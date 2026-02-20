@@ -1,12 +1,11 @@
---!strict
+-- BloxBox UI: Keybind (Executor Compatible)
 local UserInputService = game:GetService("UserInputService")
 local BaseComponent = require(script.Parent.BaseComponent)
-local Types = require(script.Parent.Parent.Types.ComponentTypes)
 
 local Keybind = setmetatable({}, BaseComponent)
 Keybind.__index = Keybind
 
-function Keybind.new(tab: any, options: Types.KeybindOptions)
+function Keybind.new(tab, options)
 	local self = setmetatable(BaseComponent.new(tab.Library), Keybind)
 	self.Tab = tab
 	self.Options = options
@@ -35,6 +34,9 @@ function Keybind:_mount()
 	title.BackgroundTransparency = 1
 	title.Text = self.Options.Name
 	title.TextColor3 = theme.Colors.Text
+	title.Font = theme.Typography.MainFont
+	title.TextSize = theme.Typography.BaseSize
+	title.TextXAlignment = Enum.TextXAlignment.Left
 	title.Parent = container
 
 	local bindLabel = Instance.new("TextLabel")
@@ -43,12 +45,13 @@ function Keybind:_mount()
 	bindLabel.AnchorPoint = Vector2.new(0, 0.5)
 	bindLabel.BackgroundColor3 = theme.Colors.Background
 	bindLabel.TextColor3 = theme.Colors.Accent
+	bindLabel.Font = theme.Typography.MainFont
+	bindLabel.TextSize = 12
 	bindLabel.Parent = container
 	Instance.new("UICorner", bindLabel).CornerRadius = UDim.new(0, 4)
 
 	local function updateBind(key)
 		bindLabel.Text = key.Name
-		self.Options.Callback(key)
 	end
 
 	self.Maid:GiveTask(state:Subscribe(self.Options.Flag, updateBind))
@@ -62,6 +65,9 @@ function Keybind:_mount()
 		if self.Binding and input.UserInputType == Enum.UserInputType.Keyboard then
 			self.Binding = false
 			state:Set(self.Options.Flag, input.KeyCode)
+			if self.Options.Callback then
+				self.Options.Callback(input.KeyCode)
+			end
 		end
 	end))
 	

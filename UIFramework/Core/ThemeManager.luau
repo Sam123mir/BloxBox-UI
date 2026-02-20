@@ -1,10 +1,7 @@
---!strict
+-- BloxBox UI: ThemeManager (Executor Compatible)
 local Signal = require(script.Parent.Parent.Utils.Signal)
-local ThemeTypes = require(script.Parent.Parent.Types.ThemeTypes)
 
-type Theme = ThemeTypes.Theme
-
-local DefaultTheme: Theme = {
+local DefaultTheme = {
 	Colors = {
 		Background = Color3.fromRGB(15, 15, 15),
 		Surface = Color3.fromRGB(22, 22, 22),
@@ -14,8 +11,8 @@ local DefaultTheme: Theme = {
 		Border = Color3.fromRGB(40, 40, 40),
 	},
 	Typography = {
-		MainFont = Font.fromEnum(Enum.Font.Inter),
-		HeaderFont = Font.fromEnum(Enum.Font.Inter),
+		MainFont = Enum.Font.GothamMedium,
+		HeaderFont = Enum.Font.GothamBold,
 		BaseSize = 14,
 		HeaderSize = 16,
 	},
@@ -42,17 +39,16 @@ function ThemeManager.new()
 	return self
 end
 
-function ThemeManager:GetTheme(): Theme
+function ThemeManager:GetTheme()
 	return self._currentTheme
 end
 
-function ThemeManager:SetAccent(color: Color3)
+function ThemeManager:SetAccent(color)
 	self._currentTheme.Colors.Accent = color
 	self._themeChanged:Fire(self._currentTheme)
 end
 
-function ThemeManager:SetTheme(theme: string)
-	-- Soporte para temas adicionales en el futuro (Nord, Light, etc)
+function ThemeManager:SetTheme(theme)
 	self._themeChanged:Fire(self._currentTheme)
 end
 

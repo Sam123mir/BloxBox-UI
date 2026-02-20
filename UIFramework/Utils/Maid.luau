@@ -1,8 +1,6 @@
---!strict
+-- BloxBox UI: Maid (Executor Compatible)
 local Maid = {}
 Maid.__index = Maid
-
-export type Task = (() -> ()) | { Destroy: (any) -> () } | { disconnect: (any) -> () } | RBXScriptConnection
 
 function Maid.new()
 	return setmetatable({
@@ -10,7 +8,7 @@ function Maid.new()
 	}, Maid)
 end
 
-function Maid:GiveTask(task: Task): number
+function Maid:GiveTask(task)
 	local id = #self._tasks + 1
 	self._tasks[id] = task
 	return id
@@ -22,12 +20,12 @@ function Maid:DoCleaning()
 			task()
 		elseif typeof(task) == "RBXScriptConnection" then
 			task:Disconnect()
-		elseif (task :: any).Destroy then
-			(task :: any):Destroy()
-		elseif (task :: any).Disconnect then
-			(task :: any):Disconnect()
-		elseif (task :: any).disconnect then
-			(task :: any):disconnect()
+		elseif typeof(task) == "table" and task.Destroy then
+			task:Destroy()
+		elseif typeof(task) == "table" and task.Disconnect then
+			task:Disconnect()
+		elseif typeof(task) == "Instance" then
+			task:Destroy()
 		end
 	end
 	self._tasks = {}

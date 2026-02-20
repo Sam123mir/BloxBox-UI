@@ -1,190 +1,177 @@
---!strict
-local RunService = game:GetService("RunService")
-local HttpService = game:GetService("HttpService")
+-- BloxBox UI: Window (Executor Compatible)
+local AnimationEngine = require(script.Parent.Parent.Core.AnimationEngine)
+local DragSystem = require(script.Parent.Parent.Utils.DragSystem)
 
-local BaseComponent = require(script.Parent.BaseComponent)
-local Core = script.Parent.Parent.Core
-local Utils = script.Parent.Parent.Utils
-local Types = script.Parent.Parent.Types
-
-local WindowManager = require(Core.WindowManager)
-local AnimationEngine = require(Core.AnimationEngine)
-local DragSystem = require(Utils.DragSystem)
-local ComponentTypes = require(Types.ComponentTypes)
-
-local Window = setmetatable({}, BaseComponent)
+local Window = {}
 Window.__index = Window
 
-type WindowOptions = ComponentTypes.WindowOptions
-
-function Window.new(library: any, options: WindowOptions)
-	local self = setmetatable(BaseComponent.new(library), Window)
-	self.Options = options
-	self.Tabs = {}
-	self.ActiveTab = nil
-	
+function Window.new(library, options)
+	local self = setmetatable({
+		Library = library,
+		Options = options,
+		Tabs = {},
+		SelectedTab = nil,
+		Instance = nil,
+		TabList = nil,
+		ContentFrame = nil,
+	}, Window)
 	self:_mount()
 	return self
 end
 
 function Window:_mount()
 	local theme = self.Library.Theme:GetTheme()
-	
-	local sg = Instance.new("ScreenGui")
-	sg.Name = "SaaS_" .. HttpService:GenerateGUID(false):sub(1, 8)
-	sg.ResetOnSpawn = false
-	sg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-	sg.Parent = (RunService:IsStudio() and game.Players.LocalPlayer:WaitForChild("PlayerGui")) or game:GetService("CoreGui")
-	self.Instance = sg
-	self.Maid:GiveTask(sg)
+	local player = game:GetService("Players").LocalPlayer
 
-	-- Sombra exterior
-	local shadowContainer = Instance.new("Frame", sg)
-	shadowContainer.Size = self.Options.Size
-	shadowContainer.Position = self.Options.Position or UDim2.fromScale(0.5, 0.5)
-	shadowContainer.AnchorPoint = Vector2.new(0.5, 0.5)
-	shadowContainer.BackgroundTransparency = 1
-	
-	local shadow = Instance.new("ImageLabel", shadowContainer)
-	shadow.AnchorPoint = Vector2.new(0.5, 0.5)
-	shadow.Position = UDim2.fromScale(0.5, 0.5)
-	shadow.Size = UDim2.new(1, 40, 1, 40)
-	shadow.BackgroundTransparency = 1
-	shadow.Image = "rbxassetid://6015267023"
-	shadow.ImageColor3 = Color3.new(0, 0, 0)
-	shadow.ImageTransparency = 0.6
-	shadow.ScaleType = Enum.ScaleType.Slice
-	shadow.SliceCenter = Rect.new(49, 49, 450, 450)
+	local gui = Instance.new("ScreenGui")
+	gui.Name = "BloxBoxWindow"
+	gui.ResetOnSpawn = false
+	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
+	pcall(function() gui.Parent = game:GetService("CoreGui") end)
+	if not gui.Parent then
+		gui.Parent = player:WaitForChild("PlayerGui")
+	end
+	self.Instance = gui
+
+	local size = self.Options.Size or UDim2.fromOffset(600, 400)
+
+	-- Frame principal
 	local main = Instance.new("Frame")
 	main.Name = "Main"
-	main.Size = UDim2.fromScale(1, 1)
+	main.Size = size
+	main.Position = self.Options.Position or UDim2.fromScale(0.5, 0.5)
+	main.AnchorPoint = Vector2.new(0.5, 0.5)
 	main.BackgroundColor3 = theme.Colors.Background
 	main.BorderSizePixel = 0
-	main.Parent = shadowContainer
-	self.MainInstance = main
+	main.Parent = gui
+	Instance.new("UICorner", main).CornerRadius = UDim.new(0, 10)
 
-	Instance.new("UICorner", main).CornerRadius = UDim.new(0, theme.Layout.Radius)
-	local stroke = Instance.new("UIStroke", main)
+	local stroke = Instance.new("UIStroke")
 	stroke.Color = theme.Colors.Border
-	stroke.Transparency = theme.Effects.StrokeTransparency
-	stroke.Thickness = 1.2
+	stroke.Thickness = 1
+	stroke.Transparency = 0.5
+	stroke.Parent = main
 
+	-- Header / Barra de título
 	local header = Instance.new("Frame")
-	header.Name = "Header"
-	header.Size = UDim2.new(1, 0, 0, 45)
-	header.BackgroundTransparency = 1
+	header.Size = UDim2.new(1, 0, 0, 36)
+	header.BackgroundColor3 = theme.Colors.Surface
+	header.BorderSizePixel = 0
 	header.Parent = main
-	
-	self.Maid:GiveTask(DragSystem.new(header, shadowContainer))
+	Instance.new("UICorner", header).CornerRadius = UDim.new(0, 10)
 
-	local title = Instance.new("TextLabel")
-	title.Name = "Title"
-	title.Size = UDim2.new(0.5, 0, 1, 0)
-	title.Position = UDim2.fromOffset(20, 0)
-	title.BackgroundTransparency = 1
-	title.TextColor3 = theme.Colors.Text
-	title.Text = self.Options.Title
-	title.Font = Enum.Font.InterBold
-	title.TextSize = 16
-	title.TextXAlignment = Enum.TextXAlignment.Left
-	title.Parent = header
+	-- Fix corners visibles de abajo
+	local headerFix = Instance.new("Frame")
+	headerFix.Size = UDim2.new(1, 0, 0, 12)
+	headerFix.Position = UDim2.new(0, 0, 1, -12)
+	headerFix.BackgroundColor3 = theme.Colors.Surface
+	headerFix.BorderSizePixel = 0
+	headerFix.Parent = header
 
-	-- Barra lateral de Pestañas (Elegante)
-	local tabsContainer = Instance.new("Frame")
-	tabsContainer.Name = "Tabs"
-	tabsContainer.Size = UDim2.new(0, 160, 1, -55)
-	tabsContainer.Position = UDim2.fromOffset(10, 45)
-	tabsContainer.BackgroundColor3 = theme.Colors.Surface
-	tabsContainer.BackgroundTransparency = 0.2
-	tabsContainer.BorderSizePixel = 0
-	tabsContainer.Parent = main
-	
-	Instance.new("UICorner", tabsContainer).CornerRadius = UDim.new(0, 10)
-	local tabsList = Instance.new("UIListLayout", tabsContainer)
-	tabsList.Padding = UDim.new(0, 4)
-	tabsList.SortOrder = Enum.SortOrder.LayoutOrder
-	Instance.new("UIPadding", tabsContainer).PaddingBottom = UDim.new(0, 10)
-	Instance.new("UIPadding", tabsContainer).PaddingTop = UDim.new(0, 10)
-	Instance.new("UIPadding", tabsContainer).PaddingLeft = UDim.new(0, 8)
-	Instance.new("UIPadding", tabsContainer).PaddingRight = UDim.new(0, 8)
+	local titleLabel = Instance.new("TextLabel")
+	titleLabel.Size = UDim2.new(1, -80, 1, 0)
+	titleLabel.Position = UDim2.fromOffset(12, 0)
+	titleLabel.BackgroundTransparency = 1
+	titleLabel.Text = self.Options.Title or "BloxBox Window"
+	titleLabel.TextColor3 = theme.Colors.Text
+	titleLabel.Font = theme.Typography.HeaderFont
+	titleLabel.TextSize = theme.Typography.HeaderSize
+	titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+	titleLabel.Parent = header
 
-	-- Área de Contenido con Barra de Búsqueda
-	local contentArea = Instance.new("Frame")
-	contentArea.Name = "ContentArea"
-	contentArea.Size = UDim2.new(1, -190, 1, -55)
-	contentArea.Position = UDim2.fromOffset(180, 45)
-	contentArea.BackgroundTransparency = 1
-	contentArea.Parent = main
+	-- Botón cerrar
+	local closeBtn = Instance.new("TextButton")
+	closeBtn.Size = UDim2.fromOffset(28, 28)
+	closeBtn.Position = UDim2.new(1, -34, 0.5, 0)
+	closeBtn.AnchorPoint = Vector2.new(0, 0.5)
+	closeBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+	closeBtn.BackgroundTransparency = 0.8
+	closeBtn.Text = "✕"
+	closeBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+	closeBtn.Font = Enum.Font.GothamBold
+	closeBtn.TextSize = 14
+	closeBtn.BorderSizePixel = 0
+	closeBtn.AutoButtonColor = false
+	closeBtn.Parent = header
+	Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 6)
 
-	local searchContainer = Instance.new("Frame")
-	searchContainer.Name = "Search"
-	searchContainer.Size = UDim2.new(1, 0, 0, 32)
-	searchContainer.BackgroundColor3 = theme.Colors.Surface
-	searchContainer.Parent = contentArea
-	Instance.new("UICorner", searchContainer).CornerRadius = UDim.new(0, 8)
-	
-	local searchInput = Instance.new("TextBox")
-	searchInput.Size = UDim2.new(1, -30, 1, 0)
-	searchInput.Position = UDim2.fromOffset(30, 0)
-	searchInput.BackgroundTransparency = 1
-	searchInput.PlaceholderText = "Buscar componentes..."
-	searchInput.PlaceholderColor3 = theme.Colors.TextDim
-	searchInput.TextColor3 = theme.Colors.Text
-	searchInput.Text = ""
-	searchInput.Font = Enum.Font.Inter
-	searchInput.TextSize = 13
-	searchInput.TextXAlignment = Enum.TextXAlignment.Left
-	searchInput.ClearTextOnFocus = false
-	searchInput.Parent = searchContainer
+	closeBtn.MouseButton1Click:Connect(function()
+		self:Destroy()
+	end)
 
-	local searchIcon = Instance.new("ImageLabel", searchContainer)
-	searchIcon.Size = UDim2.fromOffset(16, 16)
-	searchIcon.Position = UDim2.new(0, 8, 0.5, 0)
-	searchIcon.AnchorPoint = Vector2.new(0, 0.5)
-	searchIcon.BackgroundTransparency = 1
-	searchIcon.Image = "rbxassetid://6031289116"
-	searchIcon.ImageColor3 = theme.Colors.TextDim
+	-- Sidebar de pestañas
+	local sidebar = Instance.new("Frame")
+	sidebar.Size = UDim2.new(0, 130, 1, -36)
+	sidebar.Position = UDim2.fromOffset(0, 36)
+	sidebar.BackgroundColor3 = theme.Colors.Surface
+	sidebar.BackgroundTransparency = 0.5
+	sidebar.BorderSizePixel = 0
+	sidebar.Parent = main
 
-	local contentScroll = Instance.new("Frame")
-	contentScroll.Name = "ScrollArea"
-	contentScroll.Size = UDim2.new(1, 0, 1, -40)
-	contentScroll.Position = UDim2.fromOffset(0, 40)
-	contentScroll.BackgroundTransparency = 1
-	contentScroll.Parent = contentArea
+	local sidebarLayout = Instance.new("UIListLayout")
+	sidebarLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	sidebarLayout.Padding = UDim.new(0, 2)
+	sidebarLayout.Parent = sidebar
 
-	self.Containers = { Tabs = tabsContainer, Content = contentScroll }
-	self.SearchInput = searchInput
-	self.WindowId = WindowManager:Register(self)
+	local sidebarPadding = Instance.new("UIPadding")
+	sidebarPadding.PaddingTop = UDim.new(0, 6)
+	sidebarPadding.PaddingLeft = UDim.new(0, 4)
+	sidebarPadding.PaddingRight = UDim.new(0, 4)
+	sidebarPadding.Parent = sidebar
 
-	-- Evento de búsqueda global
-	self.Maid:GiveTask(searchInput:GetPropertyChangedSignal("Text"):Connect(function()
-		if self.ActiveTab then
-			self.ActiveTab:Filter(searchInput.Text)
-		end
-	end))
+	self.TabList = sidebar
 
-	-- Animación de foco
-	self.Maid:GiveTask(header.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			WindowManager:SetFocus(self.WindowId)
-			AnimationEngine:Tween(stroke, { Transparency = 0.4 }, "Fast")
-		end
-	end))
-	
-	self.Maid:GiveTask(sg.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			AnimationEngine:Tween(stroke, { Transparency = theme.Effects.StrokeTransparency }, "Fast")
-		end
-	end))
+	-- Área de contenido
+	local contentFrame = Instance.new("Frame")
+	contentFrame.Size = UDim2.new(1, -130, 1, -36)
+	contentFrame.Position = UDim2.fromOffset(130, 36)
+	contentFrame.BackgroundTransparency = 1
+	contentFrame.BorderSizePixel = 0
+	contentFrame.Parent = main
+
+	self.ContentFrame = contentFrame
+
+	-- Drag
+	DragSystem.new(header, main)
+
+	-- Animación de entrada
+	main.BackgroundTransparency = 1
+	titleLabel.TextTransparency = 1
+	AnimationEngine:Tween(main, { BackgroundTransparency = 0 }, "Normal")
+	AnimationEngine:Tween(titleLabel, { TextTransparency = 0 }, "Normal")
+
+	-- Registrar ventana
+	self.Library.WindowManager:Register(self)
 end
 
-function Window:CreateTab(name: string)
-	local Tab = require(script.Parent.Tab)
-	local tab = Tab.new(self, name)
+function Window:CreateTab(name)
+	local TabModule = require(script.Parent.Tab)
+	local tab = TabModule.new(self, name)
 	table.insert(self.Tabs, tab)
-	if not self.ActiveTab then tab:Select() end
+	
+	-- Auto-seleccionar primera pestaña
+	if #self.Tabs == 1 then
+		self:SelectTab(tab)
+	end
+	
 	return tab
+end
+
+function Window:SelectTab(tab)
+	-- Ocultar todas
+	for _, t in ipairs(self.Tabs) do
+		t:Hide()
+	end
+	-- Mostrar la seleccionada
+	tab:Show()
+	self.SelectedTab = tab
+end
+
+function Window:Destroy()
+	if self.Instance then
+		self.Instance:Destroy()
+	end
 end
 
 return Window

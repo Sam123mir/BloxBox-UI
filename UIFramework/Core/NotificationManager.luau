@@ -1,137 +1,111 @@
---!strict
-local RunService = game:GetService("RunService")
-local Core = script.Parent
-local Utils = script.Parent.Parent.Utils
-local Maid = require(Utils.Maid)
-local AnimationEngine = require(Core.AnimationEngine)
+-- BloxBox UI: NotificationManager (Executor Compatible)
+local AnimationEngine = require(script.Parent.AnimationEngine)
+local Maid = require(script.Parent.Parent.Utils.Maid)
 
-local NotificationManager = {
-	_container = nil,
-	_notifications = {},
-	_maxNotifications = 5,
-}
+local NotificationManager = {}
+NotificationManager.__index = NotificationManager
 
-function NotificationManager:_initContainer()
-	if self._container then return end
-	
-	local sg = Instance.new("ScreenGui")
-	sg.Name = "SaaS_Notifications"
-	sg.DisplayOrder = 100
-	sg.ResetOnSpawn = false
-	sg.Parent = (RunService:IsStudio() and game.Players.LocalPlayer:WaitForChild("PlayerGui")) or game:GetService("CoreGui")
-	
-	local frame = Instance.new("Frame")
-	frame.Name = "Container"
-	frame.Size = UDim2.new(0, 300, 1, -40)
-	frame.Position = UDim2.new(1, -310, 0, 20)
-	frame.BackgroundTransparency = 1
-	frame.Parent = sg
-	
-	local list = Instance.new("UIListLayout", frame)
-	list.VerticalAlignment = Enum.VerticalAlignment.Bottom
-	list.HorizontalAlignment = Enum.HorizontalAlignment.Right
-	list.Padding = UDim.new(0, 10)
-	list.SortOrder = Enum.SortOrder.LayoutOrder
-	
-	self._container = frame
+function NotificationManager.new()
+	return setmetatable({
+		_container = nil,
+		_maid = Maid.new(),
+	}, NotificationManager)
 end
 
-type NotificationOptions = {
-	Title: string,
-	Content: string,
-	Duration: number?,
-	Type: ("Info" | "Success" | "Warning" | "Error")?,
-}
+function NotificationManager:_getContainer()
+	if self._container and self._container.Parent then
+		return self._container
+	end
+	local player = game:GetService("Players").LocalPlayer
+	local gui = Instance.new("ScreenGui")
+	gui.Name = "BloxBoxNotifications"
+	gui.ResetOnSpawn = false
+	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+	gui.DisplayOrder = 100
 
-function NotificationManager:Notify(library: any, options: NotificationOptions)
-	self:_initContainer()
+	pcall(function() gui.Parent = game:GetService("CoreGui") end)
+	if not gui.Parent then
+		gui.Parent = player:WaitForChild("PlayerGui")
+	end
 	
-	local theme = library.Theme:GetTheme()
-	local duration = options.Duration or 5
-	local maid = Maid.new()
+	local container = Instance.new("Frame")
+	container.Size = UDim2.new(0, 300, 1, 0)
+	container.Position = UDim2.new(1, -310, 0, 0)
+	container.BackgroundTransparency = 1
+	container.Parent = gui
 	
-	local notification = Instance.new("Frame")
-	notification.Name = "Notification"
-	notification.Size = UDim2.new(1, 0, 0, 0) -- Inicia invisible para animar la altura
-	notification.BackgroundColor3 = theme.Colors.Surface
-	notification.BorderSizePixel = 0
-	notification.ClipsDescendants = true
-	notification.LayoutOrder = -os.clock() * 1000
-	notification.Parent = self._container
+	local layout = Instance.new("UIListLayout")
+	layout.SortOrder = Enum.SortOrder.LayoutOrder
+	layout.Padding = UDim.new(0, 6)
+	layout.VerticalAlignment = Enum.VerticalAlignment.Bottom
+	layout.Parent = container
 	
-	Instance.new("UICorner", notification).CornerRadius = UDim.new(0, 8)
-	local stroke = Instance.new("UIStroke", notification)
-	stroke.Color = theme.Colors.Border
-	stroke.Transparency = theme.Effects.StrokeTransparency
-	
-	local shadow = Instance.new("ImageLabel", notification)
-	shadow.Name = "Shadow"
-	shadow.AnchorPoint = Vector2.new(0.5, 0.5)
-	shadow.Position = UDim2.fromScale(0.5, 0.5)
-	shadow.Size = UDim2.new(1, 10, 1, 10)
-	shadow.BackgroundTransparency = 1
-	shadow.Image = "rbxassetid://6015267023"
-	shadow.ImageColor3 = Color3.new(0, 0, 0)
-	shadow.ImageTransparency = 0.5
-	shadow.ScaleType = Enum.ScaleType.Slice
-	shadow.SliceCenter = Rect.new(49, 49, 450, 450)
-	shadow.ZIndex = -1
+	self._container = container
+	return container
+end
 
-	local accentBar = Instance.new("Frame", notification)
-	accentBar.Size = UDim2.new(0, 4, 1, 0)
-	accentBar.BackgroundColor3 = options.Type == "Error" and Color3.fromRGB(255, 80, 80) 
-		or options.Type == "Success" and Color3.fromRGB(80, 255, 80)
-		or theme.Colors.Accent
-	accentBar.BorderSizePixel = 0
+function NotificationManager:Show(options)
+	local container = self:_getContainer()
 	
-	local title = Instance.new("TextLabel", notification)
-	title.Size = UDim2.new(1, -20, 0, 20)
-	title.Position = UDim2.fromOffset(12, 8)
+	local typeColors = {
+		Info = Color3.fromRGB(0, 170, 255),
+		Success = Color3.fromRGB(0, 200, 80),
+		Warning = Color3.fromRGB(255, 180, 0),
+		Error = Color3.fromRGB(255, 60, 60),
+	}
+	
+	local color = typeColors[options.Type or "Info"] or typeColors.Info
+	
+	local notif = Instance.new("Frame")
+	notif.Size = UDim2.new(1, 0, 0, 60)
+	notif.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+	notif.BackgroundTransparency = 0.1
+	notif.BorderSizePixel = 0
+	notif.Parent = container
+	
+	Instance.new("UICorner", notif).CornerRadius = UDim.new(0, 8)
+	
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = color
+	stroke.Thickness = 1
+	stroke.Transparency = 0.5
+	stroke.Parent = notif
+	
+	local title = Instance.new("TextLabel")
+	title.Size = UDim2.new(1, -16, 0, 22)
+	title.Position = UDim2.fromOffset(8, 4)
 	title.BackgroundTransparency = 1
-	title.Text = options.Title
-	title.TextColor3 = theme.Colors.Text
-	title.Font = Enum.Font.InterBold
+	title.Text = options.Title or "Notification"
+	title.TextColor3 = color
+	title.Font = Enum.Font.GothamBold
 	title.TextSize = 14
 	title.TextXAlignment = Enum.TextXAlignment.Left
+	title.Parent = notif
 	
-	local content = Instance.new("TextLabel", notification)
-	content.Size = UDim2.new(1, -20, 0, 0)
-	content.Position = UDim2.fromOffset(12, 28)
+	local content = Instance.new("TextLabel")
+	content.Size = UDim2.new(1, -16, 0, 28)
+	content.Position = UDim2.fromOffset(8, 26)
 	content.BackgroundTransparency = 1
-	content.Text = options.Content
-	content.TextColor3 = theme.Colors.TextDim
-	content.Font = Enum.Font.Inter
-	content.TextSize = 13
+	content.Text = options.Content or ""
+	content.TextColor3 = Color3.fromRGB(200, 200, 200)
+	content.Font = Enum.Font.Gotham
+	content.TextSize = 12
 	content.TextXAlignment = Enum.TextXAlignment.Left
 	content.TextWrapped = true
+	content.Parent = notif
 	
-	-- Calcular altura basada en el texto
-	local textBounds = game:GetService("TextService"):GetTextSize(options.Content, 13, Enum.Font.Inter, Vector2.new(280, 1000))
-	local targetHeight = 40 + textBounds.Y
+	-- Animación entrada
+	notif.Position = UDim2.fromOffset(300, 0)
+	AnimationEngine:Tween(notif, { Position = UDim2.fromOffset(0, 0) }, "Fast")
 	
-	-- Barra de progreso
-	local progressBackground = Instance.new("Frame", notification)
-	progressBackground.Size = UDim2.new(1, 0, 0, 2)
-	progressBackground.Position = UDim2.new(0, 0, 1, -2)
-	progressBackground.BackgroundColor3 = theme.Colors.Background
-	progressBackground.BackgroundTransparency = 0.5
-	progressBackground.BorderSizePixel = 0
-	
-	local progressBar = Instance.new("Frame", progressBackground)
-	progressBar.Size = UDim2.fromScale(1, 1)
-	progressBar.BackgroundColor3 = accentBar.BackgroundColor3
-	progressBar.BorderSizePixel = 0
-
-	-- Animación de entrada
-	AnimationEngine:Tween(notification, { Size = UDim2.new(1, 0, 0, targetHeight) }, "Normal")
-	AnimationEngine:Tween(progressBar, { Size = UDim2.fromScale(0, 1) }, TweenInfo.new(duration, Enum.EasingStyle.Linear))
-	
-	-- Auto-destrucción
-	task.delay(duration, function()
-		local out = AnimationEngine:Tween(notification, { Position = UDim2.fromOffset(350, 0), ImageTransparency = 1 }, "Normal")
-		out.Completed:Wait()
-		notification:Destroy()
-		maid:Destroy()
+	-- Auto-destruir
+	task.delay(options.Duration or 4, function()
+		AnimationEngine:Tween(notif, { BackgroundTransparency = 1 }, "Normal")
+		AnimationEngine:Tween(title, { TextTransparency = 1 }, "Normal")
+		AnimationEngine:Tween(content, { TextTransparency = 1 }, "Normal")
+		AnimationEngine:Tween(stroke, { Transparency = 1 }, "Normal")
+		task.wait(0.4)
+		notif:Destroy()
 	end)
 end
 

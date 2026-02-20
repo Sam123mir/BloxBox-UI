@@ -1,4 +1,4 @@
---!strict
+-- BloxBox UI: BaseComponent (Executor Compatible)
 local Utils = script.Parent.Parent.Utils
 local Maid = require(Utils.Maid)
 local Core = script.Parent.Parent.Core
@@ -7,7 +7,7 @@ local ComponentRegistry = require(Core.ComponentRegistry)
 local BaseComponent = {}
 BaseComponent.__index = BaseComponent
 
-function BaseComponent.new(library: any)
+function BaseComponent.new(library)
 	local self = setmetatable({
 		Library = library,
 		Maid = Maid.new(),

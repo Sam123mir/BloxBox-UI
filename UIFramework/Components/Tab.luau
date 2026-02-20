@@ -1,132 +1,118 @@
---!strict
+-- BloxBox UI: Tab (Executor Compatible)
 local BaseComponent = require(script.Parent.BaseComponent)
-local Core = script.Parent.Parent.Core
-local AnimationEngine = require(Core.AnimationEngine)
+local AnimationEngine = require(script.Parent.Parent.Core.AnimationEngine)
 
 local Tab = setmetatable({}, BaseComponent)
 Tab.__index = Tab
 
-function Tab.new(window: any, name: string)
+function Tab.new(window, name)
 	local self = setmetatable(BaseComponent.new(window.Library), Tab)
 	self.Window = window
-	self.Name = name
-	self.Active = false
-	self.ContentLoaded = false
-	
+	self.TabName = name
+	self.Container = nil
+	self.TabButton = nil
 	self:_mount()
 	return self
 end
 
 function Tab:_mount()
-	local theme = self.Window.Library.Theme:GetTheme()
-	
-	local btn = Instance.new("TextButton")
-	btn.Name = self.Name
-	btn.Size = UDim2.new(1, 0, 0, 34)
-	btn.BackgroundColor3 = theme.Colors.Surface
-	btn.BackgroundTransparency = 1
-	btn.BorderSizePixel = 0
-	btn.Text = ""
-	btn.AutoButtonColor = false
-	btn.Parent = self.Window.Containers.Tabs
-	self.Button = btn
+	local theme = self.Library.Theme:GetTheme()
 
-	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
-	
-	local title = Instance.new("TextLabel", btn)
-	title.Size = UDim2.new(1, -10, 1, 0)
-	title.Position = UDim2.fromOffset(10, 0)
-	title.BackgroundTransparency = 1
-	title.Text = self.Name
-	title.TextColor3 = theme.Colors.TextDim
-	title.Font = Enum.Font.InterMedium
-	title.TextSize = 13
-	title.TextXAlignment = Enum.TextXAlignment.Left
-	self.ButtonTitle = title
+	-- Botón de pestaña en la sidebar
+	local tabBtn = Instance.new("TextButton")
+	tabBtn.Size = UDim2.new(1, 0, 0, 32)
+	tabBtn.BackgroundColor3 = theme.Colors.Surface
+	tabBtn.BackgroundTransparency = 1
+	tabBtn.BorderSizePixel = 0
+	tabBtn.Text = self.TabName
+	tabBtn.TextColor3 = theme.Colors.TextDim
+	tabBtn.Font = theme.Typography.MainFont
+	tabBtn.TextSize = 13
+	tabBtn.AutoButtonColor = false
+	tabBtn.Parent = self.Window.TabList
+	self.TabButton = tabBtn
 
-	btn.MouseEnter:Connect(function()
-		if not self.Active then
-			AnimationEngine:Tween(btn, { BackgroundTransparency = 0.5 }, "Fast")
-		end
-	end)
-	btn.MouseLeave:Connect(function()
-		if not self.Active then
-			AnimationEngine:Tween(btn, { BackgroundTransparency = 1 }, "Fast")
-		end
-	end)
-
-	btn.MouseButton1Click:Connect(function() self:Select() end)
-	
+	-- Contenedor de contenido
 	local container = Instance.new("ScrollingFrame")
-	container.Name = self.Name .. "_Content"
 	container.Size = UDim2.fromScale(1, 1)
 	container.BackgroundTransparency = 1
 	container.BorderSizePixel = 0
-	container.Visible = false
-	container.ScrollBarThickness = 1
+	container.ScrollBarThickness = 3
 	container.ScrollBarImageColor3 = theme.Colors.Accent
-	container.CanvasSize = UDim2.new(0, 0, 0, 0)
+	container.CanvasSize = UDim2.fromScale(0, 0)
 	container.AutomaticCanvasSize = Enum.AutomaticSize.Y
-	container.Parent = self.Window.Containers.Content
+	container.Visible = false
+	container.Parent = self.Window.ContentFrame
+
+	local layout = Instance.new("UIListLayout")
+	layout.SortOrder = Enum.SortOrder.LayoutOrder
+	layout.Padding = UDim.new(0, 4)
+	layout.Parent = container
+
+	local padding = Instance.new("UIPadding")
+	padding.PaddingLeft = UDim.new(0, 6)
+	padding.PaddingRight = UDim.new(0, 6)
+	padding.PaddingTop = UDim.new(0, 6)
+	padding.Parent = container
+
 	self.Container = container
-	
-	local list = Instance.new("UIListLayout", container)
-	list.Padding = UDim.new(0, 6)
-	list.SortOrder = Enum.SortOrder.LayoutOrder
-	
-	Instance.new("UIPadding", container).PaddingTop = UDim.new(0, 2)
-	Instance.new("UIPadding", container).PaddingLeft = UDim.new(0, 2)
-	Instance.new("UIPadding", container).PaddingRight = UDim.new(0, 6)
+
+	tabBtn.MouseButton1Click:Connect(function()
+		self.Window:SelectTab(self)
+	end)
 end
 
-function Tab:Select()
-	if self.Window.ActiveTab == self then return end
-	if self.Window.ActiveTab then self.Window.ActiveTab:Deselect() end
-	self.Window.ActiveTab = self
-	self.Active = true
-	
-	local theme = self.Window.Library.Theme:GetTheme()
-	AnimationEngine:Tween(self.Button, { BackgroundTransparency = 0, BackgroundColor3 = theme.Colors.Accent }, "Fast")
-	AnimationEngine:Tween(self.ButtonTitle, { TextColor3 = Color3.new(1,1,1) }, "Fast")
-	
+function Tab:Show()
 	self.Container.Visible = true
+	local theme = self.Library.Theme:GetTheme()
+	AnimationEngine:Tween(self.TabButton, { TextColor3 = theme.Colors.Accent, BackgroundTransparency = 0.8 }, "Fast")
 end
 
-function Tab:Deselect()
-	self.Active = false
-	local theme = self.Window.Library.Theme:GetTheme()
-	AnimationEngine:Tween(self.Button, { BackgroundTransparency = 1, BackgroundColor3 = theme.Colors.Surface }, "Fast")
-	AnimationEngine:Tween(self.ButtonTitle, { TextColor3 = theme.Colors.TextDim }, "Fast")
+function Tab:Hide()
 	self.Container.Visible = false
+	local theme = self.Library.Theme:GetTheme()
+	AnimationEngine:Tween(self.TabButton, { TextColor3 = theme.Colors.TextDim, BackgroundTransparency = 1 }, "Fast")
 end
 
-function Tab:Filter(query: string)
-	local q = query:lower()
-	for _, child in ipairs(self.Container:GetChildren()) do
-		if child:IsA("GuiObject") and not child:IsA("UIListLayout") and not child:IsA("UIPadding") then
-			local visible = true
-			if q ~= "" then
-				-- Intentar encontrar un label de texto en el componente
-				local content = child:FindFirstChild("Title", true) or child:FindFirstChildOfClass("TextLabel")
-				if content and (content :: TextLabel).Text:lower():find(q) then
-					visible = true
-				else
-					visible = false
-				end
-			end
-			child.Visible = visible
-		end
-	end
+-- Component creation methods
+function Tab:CreateButton(options)
+	local Button = require(script.Parent.Button)
+	return Button.new(self, options)
 end
 
--- Component Factories (Proxy redirects)
-function Tab:CreateButton(options) return require(script.Parent.Button).new(self, options) end
-function Tab:CreateToggle(options) return require(script.Parent.Toggle).new(self, options) end
-function Tab:CreateSlider(options) return require(script.Parent.Slider).new(self, options) end
-function Tab:CreateDropdown(options) return require(script.Parent.Dropdown).new(self, options) end
-function Tab:CreateLabel(text) return require(script.Parent.Label).new(self, text) end
-function Tab:CreateSection(name) return require(script.Parent.Section).new(self, name) end
-function Tab:CreateTextBox(options) return require(script.Parent.TextBox).new(self, options) end
-function Tab:CreateKeybind(options) return require(script.Parent.Keybind).new(self, options) end
+function Tab:CreateToggle(options)
+	local ToggleModule = require(script.Parent.Toggle)
+	return ToggleModule.new(self, options)
+end
+
+function Tab:CreateSlider(options)
+	local SliderModule = require(script.Parent.Slider)
+	return SliderModule.new(self, options)
+end
+
+function Tab:CreateDropdown(options)
+	local DropdownModule = require(script.Parent.Dropdown)
+	return DropdownModule.new(self, options)
+end
+
+function Tab:CreateKeybind(options)
+	local KeybindModule = require(script.Parent.Keybind)
+	return KeybindModule.new(self, options)
+end
+
+function Tab:CreateTextBox(options)
+	local TextBoxModule = require(script.Parent.TextBox)
+	return TextBoxModule.new(self, options)
+end
+
+function Tab:CreateLabel(text)
+	local LabelModule = require(script.Parent.Label)
+	return LabelModule.new(self, text)
+end
+
+function Tab:CreateSection(name)
+	local SectionModule = require(script.Parent.Section)
+	return SectionModule.new(self, name)
+end
 
 return Tab

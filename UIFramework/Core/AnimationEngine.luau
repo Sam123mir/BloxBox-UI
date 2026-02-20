@@ -1,4 +1,4 @@
---!strict
+-- BloxBox UI: AnimationEngine (Executor Compatible)
 local TweenService = game:GetService("TweenService")
 
 local Presets = {
@@ -9,8 +9,13 @@ local Presets = {
 
 local AnimationEngine = {}
 
-function AnimationEngine:Tween(instance: Instance, properties: {[string]: any}, presetName: string?): Tween
-	local info = Presets[presetName or "Normal"]
+function AnimationEngine:Tween(instance, properties, presetOrInfo)
+	local info
+	if typeof(presetOrInfo) == "TweenInfo" then
+		info = presetOrInfo
+	else
+		info = Presets[presetOrInfo or "Normal"]
+	end
 	local tween = TweenService:Create(instance, info, properties)
 	tween:Play()
 	return tween

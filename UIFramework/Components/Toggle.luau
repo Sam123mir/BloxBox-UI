@@ -1,13 +1,11 @@
---!strict
+-- BloxBox UI: Toggle (Executor Compatible)
 local BaseComponent = require(script.Parent.BaseComponent)
-local Core = script.Parent.Parent.Core
-local AnimationEngine = require(Core.AnimationEngine)
-local Types = require(script.Parent.Parent.Types.ComponentTypes)
+local AnimationEngine = require(script.Parent.Parent.Core.AnimationEngine)
 
 local Toggle = setmetatable({}, BaseComponent)
 Toggle.__index = Toggle
 
-function Toggle.new(tab: any, options: Types.ToggleOptions)
+function Toggle.new(tab, options)
 	local self = setmetatable(BaseComponent.new(tab.Library), Toggle)
 	self.Tab = tab
 	self.Options = options
@@ -26,7 +24,6 @@ function Toggle:_mount()
 	container.Text = ""
 	container.AutoButtonColor = false
 	container.Parent = self.Tab.Container
-
 	Instance.new("UICorner", container).CornerRadius = UDim.new(0, 6)
 
 	local title = Instance.new("TextLabel")
@@ -35,56 +32,54 @@ function Toggle:_mount()
 	title.BackgroundTransparency = 1
 	title.Text = self.Options.Name
 	title.TextColor3 = theme.Colors.Text
+	title.Font = theme.Typography.MainFont
+	title.TextSize = theme.Typography.BaseSize
+	title.TextXAlignment = Enum.TextXAlignment.Left
 	title.Parent = container
 
 	local track = Instance.new("Frame")
-	track.Size = UDim2.fromOffset(36, 18)
-	track.Position = UDim2.new(1, -46, 0.5, 0)
+	track.Size = UDim2.fromOffset(38, 20)
+	track.Position = UDim2.new(1, -48, 0.5, 0)
 	track.AnchorPoint = Vector2.new(0, 0.5)
-	track.BackgroundColor3 = theme.Colors.Background
+	track.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	track.BorderSizePixel = 0
 	track.Parent = container
 	Instance.new("UICorner", track).CornerRadius = UDim.new(1, 0)
 
 	local knob = Instance.new("Frame")
-	knob.Size = UDim2.fromOffset(14, 14)
+	knob.Size = UDim2.fromOffset(16, 16)
 	knob.Position = UDim2.fromOffset(2, 2)
-	knob.BackgroundColor3 = theme.Colors.TextDim
+	knob.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+	knob.BorderSizePixel = 0
 	knob.Parent = track
 	Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
 
 	local function updateVisual(val)
 		if val then
+			AnimationEngine:Tween(knob, { Position = UDim2.fromOffset(20, 2), BackgroundColor3 = Color3.fromRGB(255, 255, 255) }, "Fast")
 			AnimationEngine:Tween(track, { BackgroundColor3 = theme.Colors.Accent }, "Fast")
-			AnimationEngine:Tween(knob, { 
-				Position = UDim2.fromScale(1, 0.5), 
-				AnchorPoint = Vector2.new(1.1, 0.5),
-				BackgroundColor3 = Color3.new(1, 1, 1) 
-			}, "Fast")
 		else
-			AnimationEngine:Tween(track, { BackgroundColor3 = theme.Colors.Background }, "Fast")
-			AnimationEngine:Tween(knob, { 
-				Position = UDim2.fromScale(0, 0.5), 
-				AnchorPoint = Vector2.new(-0.1, 0.5),
-				BackgroundColor3 = theme.Colors.TextDim 
-			}, "Fast")
+			AnimationEngine:Tween(knob, { Position = UDim2.fromOffset(2, 2), BackgroundColor3 = Color3.fromRGB(200, 200, 200) }, "Fast")
+			AnimationEngine:Tween(track, { BackgroundColor3 = Color3.fromRGB(60, 60, 60) }, "Fast")
 		end
 	end
 
 	self.Maid:GiveTask(state:Subscribe(self.Options.Flag, function(val)
 		updateVisual(val)
-		self.Options.Callback(val)
+		if self.Options.Callback then
+			self.Options.Callback(val)
+		end
 	end))
 
-	container.MouseButton1Down:Connect(function()
-		AnimationEngine:Tween(container, { BackgroundTransparency = 0.5 }, "Fast")
+	container.MouseButton1Click:Connect(function()
+		local current = state:Get(self.Options.Flag, false)
+		state:Set(self.Options.Flag, not current)
 	end)
 
-	container.MouseButton1Up:Connect(function()
-		AnimationEngine:Tween(container, { BackgroundTransparency = 0 }, "Fast")
-		state:Set(self.Options.Flag, not state:Get(self.Options.Flag, false))
-	end)
-	
-	state:Set(self.Options.Flag, self.Options.Default or false)
+	-- Set default
+	local default = self.Options.Default
+	if default == nil then default = false end
+	state:Set(self.Options.Flag, default)
 end
 
 return Toggle

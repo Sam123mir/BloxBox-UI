@@ -1,12 +1,6 @@
---!strict
+-- BloxBox UI: Signal (Executor Compatible)
 local Signal = {}
 Signal.__index = Signal
-
-export type Connection = {
-	Disconnect: (any) -> (),
-	_signal: any,
-	_handler: (...any) -> (),
-}
 
 function Signal.new()
 	return setmetatable({
@@ -14,24 +8,24 @@ function Signal.new()
 	}, Signal)
 end
 
-function Signal:Connect(handler: (...any) -> ()): Connection
+function Signal:Connect(handler)
 	local connection = {
 		_signal = self,
 		_handler = handler,
-		Disconnect = function(conn)
-			for i, c in ipairs(self._connections) do
-				if c == conn then
-					table.remove(self._connections, i)
-					break
-				end
+	}
+	connection.Disconnect = function(conn)
+		for i, c in ipairs(self._connections) do
+			if c == conn then
+				table.remove(self._connections, i)
+				break
 			end
 		end
-	}
+	end
 	table.insert(self._connections, connection)
-	return (connection :: any) :: Connection
+	return connection
 end
 
-function Signal:Fire(...: any)
+function Signal:Fire(...)
 	for _, connection in ipairs(self._connections) do
 		task.spawn(connection._handler, ...)
 	end

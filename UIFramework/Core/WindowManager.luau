@@ -1,4 +1,4 @@
---!strict
+-- BloxBox UI: WindowManager (Executor Compatible)
 local HttpService = game:GetService("HttpService")
 
 local WindowManager = {
@@ -7,7 +7,7 @@ local WindowManager = {
 	_baseDisplayOrder = 10,
 }
 
-function WindowManager:Register(window: any): string
+function WindowManager:Register(window)
 	local id = HttpService:GenerateGUID(false)
 	self._windows[id] = window
 	table.insert(self._stack, id)
@@ -15,7 +15,7 @@ function WindowManager:Register(window: any): string
 	return id
 end
 
-function WindowManager:SetFocus(id: string)
+function WindowManager:SetFocus(id)
 	local index = table.find(self._stack, id)
 	if index then
 		table.remove(self._stack, index)
@@ -33,7 +33,7 @@ function WindowManager:_updateDisplayOrders()
 	end
 end
 
-function WindowManager:Unregister(id: string)
+function WindowManager:Unregister(id)
 	self._windows[id] = nil
 	local index = table.find(self._stack, id)
 	if index then table.remove(self._stack, index) end
