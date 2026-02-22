@@ -423,13 +423,14 @@ local function Notif(o)
 	-- Outer card
 	local card=Instance.new("Frame")
 	card.Name="Notif"
-	card.Size=UDim2.new(1,0,0,72)
+	card.Size=UDim2.new(1,0,0,78)
 	card.BackgroundColor3=T.BgAlt
-	card.BackgroundTransparency=0.04
+	card.BackgroundTransparency=0.02
 	card.BorderSizePixel=0
 	card.ClipsDescendants=true
 	card.Parent=c
-	Corner(card,12)
+	Corner(card,14)
+	DropShadow(card,20,T.ShadowCol,0.5)
 
 	-- Subtle tinted inner bg
 	local tint=Instance.new("Frame")
@@ -439,13 +440,21 @@ local function Notif(o)
 	tint.BorderSizePixel=0
 	tint.Parent=card
 
-	-- Colored border stroke (full)
-	local stroke=Stroke(card, col, 1.2, 0.3)
+	local stroke=Stroke(card, col, 1.4, 0.25)
+
+	-- Glass tint inner
+	local glassInner=Instance.new("Frame")
+	glassInner.Size=UDim2.fromScale(1,1)
+	glassInner.BackgroundColor3=td.bg
+	glassInner.BackgroundTransparency=0.55
+	glassInner.BorderSizePixel=0
+	glassInner.Parent=card
+	Grad(glassInner,Color3.fromRGB(20,22,34),Color3.fromRGB(10,10,16),170)
 
 	-- Accent left bar (wider + gradient)
 	local bar=Instance.new("Frame")
-	bar.Size=UDim2.new(0,4,1,-14)
-	bar.Position=UDim2.fromOffset(5,7)
+	bar.Size=UDim2.new(0,4,1,-16)
+	bar.Position=UDim2.fromOffset(6,8)
 	bar.BackgroundColor3=col
 	bar.BorderSizePixel=0
 	bar.Parent=card
@@ -626,7 +635,7 @@ local function ShowIntro(logoId,cb)
 	sub.Position=UDim2.new(0.5,0,0,100)
 	sub.AnchorPoint=Vector2.new(0.5,0)
 	sub.BackgroundTransparency=1
-	sub.Text="v3.04.1 Premium"
+	sub.Text="v3.3 Spaceship"
 	sub.TextColor3=T.Accent
 	sub.Font=T.FontSB
 	sub.TextSize=11
@@ -1722,29 +1731,31 @@ function Tab:CreateLabel(t)CLabel(self,t)end
 function Tab:CreateProgress(o)return CProgress(self,o)end
 
 -- ╔══════════════════════════════════════╗
--- ║           FOOTER v3.0                ║
+-- ║           FOOTER v3.3                ║
 -- ╚══════════════════════════════════════╝
 local function MakeFooter(mainF)
 	local ft=Instance.new("Frame")
-	ft.Size=UDim2.new(1,0,0,42)
-	ft.Position=UDim2.new(0,0,1,3)
+	ft.Size=UDim2.new(1,0,0,50)
+	ft.Position=UDim2.new(0,0,1,4)
 	ft.BackgroundColor3=T.BgAlt
 	ft.BackgroundTransparency=0.04
 	ft.BorderSizePixel=0
 	ft.Parent=mainF
-	Corner(ft,10)
-	Stroke(ft,T.Border,1,0.5)
-	Grad(ft,Color3.fromRGB(20,20,30),Color3.fromRGB(16,16,22))
+	Corner(ft,12)
+	Stroke(ft,T.Border,1,0.45)
+	Grad(ft,Color3.fromRGB(18,18,28),Color3.fromRGB(12,12,18),170)
+	DropShadow(ft,16,T.ShadowCol,0.5)
 
 	-- Avatar with ring
 	local avRing=Instance.new("Frame")
-	avRing.Size=UDim2.fromOffset(32,32)
-	avRing.Position=UDim2.fromOffset(8,5)
+	avRing.Size=UDim2.fromOffset(36,36)
+	avRing.Position=UDim2.fromOffset(10,7)
 	avRing.BackgroundColor3=T.Accent
-	avRing.BackgroundTransparency=0.65
+	avRing.BackgroundTransparency=0.6
 	avRing.BorderSizePixel=0
 	avRing.Parent=ft
-	Corner(avRing,16)
+	Corner(avRing,18)
+	Stroke(avRing,T.AccGlow,1,0.6)
 
 	local av=Instance.new("ImageLabel")
 	av.Size=UDim2.fromOffset(28,28)
@@ -1759,78 +1770,78 @@ local function MakeFooter(mainF)
 	end)
 
 	local un=Instance.new("TextLabel")
-	un.Size=UDim2.fromOffset(88,36)
-	un.Position=UDim2.fromOffset(44,3)
+	un.Size=UDim2.fromOffset(90,42)
+	un.Position=UDim2.fromOffset(50,4)
 	un.BackgroundTransparency=1
 	un.Text=P.Name
 	un.TextColor3=T.Text
 	un.Font=T.FontSB
-	un.TextSize=11
+	un.TextSize=12
 	un.TextXAlignment=Enum.TextXAlignment.Left
 	un.Parent=ft
 
-	Divider(ft, UDim2.fromOffset(134,10))
+	Divider(ft, UDim2.fromOffset(142,12))
 
 	local exIc=Instance.new("ImageLabel")
 	exIc.Size=UDim2.fromOffset(14,14)
-	exIc.Position=UDim2.fromOffset(142,14)
+	exIc.Position=UDim2.fromOffset(150,18)
 	exIc.BackgroundTransparency=1
 	exIc.ImageColor3=T.TextMut
 	exIc.Image=Icon("memory")
 	exIc.Parent=ft
 
 	local exL=Instance.new("TextLabel")
-	exL.Size=UDim2.fromOffset(80,36)
-	exL.Position=UDim2.fromOffset(160,3)
+	exL.Size=UDim2.fromOffset(85,42)
+	exL.Position=UDim2.fromOffset(168,4)
 	exL.BackgroundTransparency=1
 	exL.Text=DetectExecutor()
 	exL.TextColor3=T.TextMut
 	exL.Font=T.Font
-	exL.TextSize=9
+	exL.TextSize=10
 	exL.TextXAlignment=Enum.TextXAlignment.Left
 	exL.Parent=ft
 
-	Divider(ft, UDim2.fromOffset(240,10))
+	Divider(ft, UDim2.fromOffset(254,12))
 
 	-- FPS (colored dynamically)
 	local fpsIc=Instance.new("ImageLabel")
 	fpsIc.Size=UDim2.fromOffset(14,14)
-	fpsIc.Position=UDim2.fromOffset(248,14)
+	fpsIc.Position=UDim2.fromOffset(262,18)
 	fpsIc.BackgroundTransparency=1
 	fpsIc.ImageColor3=T.Succ
 	fpsIc.Image=Icon("speed")
 	fpsIc.Parent=ft
 
 	local fpsTxt=Instance.new("TextLabel")
-	fpsTxt.Size=UDim2.fromOffset(52,36)
-	fpsTxt.Position=UDim2.fromOffset(266,3)
+	fpsTxt.Size=UDim2.fromOffset(55,42)
+	fpsTxt.Position=UDim2.fromOffset(280,4)
 	fpsTxt.BackgroundTransparency=1
 	fpsTxt.Text="-- fps"
 	fpsTxt.TextColor3=T.Succ
 	fpsTxt.Font=T.FontB
-	fpsTxt.TextSize=9
+	fpsTxt.TextSize=10
 	fpsTxt.TextXAlignment=Enum.TextXAlignment.Left
 	fpsTxt.Parent=ft
 
-	Divider(ft, UDim2.fromOffset(320,10))
+	Divider(ft, UDim2.fromOffset(336,12))
 
 	-- Ping (colored by latency)
 	local pgIc=Instance.new("ImageLabel")
 	pgIc.Size=UDim2.fromOffset(14,14)
-	pgIc.Position=UDim2.fromOffset(328,14)
+	pgIc.Position=UDim2.fromOffset(344,18)
 	pgIc.BackgroundTransparency=1
 	pgIc.ImageColor3=T.Warn
 	pgIc.Image=Icon("wifi")
 	pgIc.Parent=ft
 
 	local pgTxt=Instance.new("TextLabel")
-	pgTxt.Size=UDim2.fromOffset(65,36)
-	pgTxt.Position=UDim2.fromOffset(346,3)
+	pgTxt.Size=UDim2.fromOffset(68,42)
+	pgTxt.Position=UDim2.fromOffset(362,4)
 	pgTxt.BackgroundTransparency=1
 	pgTxt.Text="-- ms"
 	pgTxt.TextColor3=T.Warn
 	pgTxt.Font=T.FontB
-	pgTxt.TextSize=9
+	pgTxt.TextSize=10
 	pgTxt.TextXAlignment=Enum.TextXAlignment.Left
 	pgTxt.Parent=ft
 
@@ -2221,6 +2232,8 @@ function Win:_build()
 end
 
 function Win:Minimize()
+	-- Save current size before minimizing
+	self._savedSize=self._mf.Size
 	self._mbar.Visible=true
 	self._mbar.BackgroundTransparency=0
 	Tw(self._mf,{BackgroundTransparency=1,
@@ -2231,7 +2244,8 @@ end
 
 function Win:Restore()
 	self._mf.Visible=true
-	local sz=self._o.Size or UDim2.fromOffset(680,480)
+	-- Use saved size (user may have resized) or default
+	local sz=self._savedSize or self._o.Size or UDim2.fromOffset(680,480)
 	self._mf.Size=UDim2.fromOffset(sz.X.Offset-30,sz.Y.Offset-22)
 	Tw(self._mf,{BackgroundTransparency=0,Size=sz},TI.Bounce)
 	Tw(self._mbar,{BackgroundTransparency=1},TI.Fast)
